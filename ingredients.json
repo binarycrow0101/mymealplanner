@@ -35,8 +35,8 @@
     "jerk seasoning",
     "lime",
     "rice",
-    "Coconut milk"
-    "Kidney beans"
+    "coconut milk",
+    "Kidney beans",
     "Sweetcorn"
   ]
   "Pasta and Red Sauce": [
@@ -46,15 +46,51 @@
     "capers",
     "garlic bread"
   ],
-  "Cheddar Broccoli": [],
-  "Fish Burgers": [],
-  "Stir Fry": [],
+  "Cheddar Broccoli": [
+    "broccoli",
+    "cheddar",
+    "butter",
+    "onion",
+    "garlic",
+    "flour",
+    "cream"
+  ],
+  "Fish Burgers": [
+    "breaded/battered fish fillets",
+    "chips",
+    "franks hot sauce",
+    "lettuce",
+    "tomatoes",
+    "cheese slices",
+    "green beans"
+  ],
+  "Stir Fry": [
+    "egg noodles", 
+    "chicken breast/shrimp",
+    "hoisin sauce",
+    "sugar snap peas",
+    "cashew nuts",
+    "honey",
+    "soy sauce",
+    "garlic",
+    "ginger"
+  ],
   "Rotisserie Chicken": [],
   "Take Out": [],
   "Chicken Souvlaki": [],
   "Avocado Toast": [],
   "Chicken Parm": [],
-  "Roast Chicken": [],
+  "Roast Chicken": [
+    "whole chicken",
+    "yorkshire pudding",
+    "potatoes",
+    "carrots",
+    "parsnips",
+    "lemon",
+    "rosemary and thyme",
+    "garlic",
+    "gravy"
+  ],
   "Tomato Basil Chicken": [],
   "Minestrone Soup": [],
   "Artichoke Risotto": [],
@@ -69,12 +105,34 @@
   "Garlic Noodles": [],
   "M&S Dine In": [],
   "Beef Burgers": [],
-  "Chicken Burgers": [],
+  "Chicken Burgers": [
+    "breaded/battered chicken",
+    "chips",
+    "lettuce",
+    "tomatoes",
+    "cheese slices",
+    "green beans"
+  ],
   "Turkey Burgers": [],
-  "Pasta Bake": [],
+  "Pasta Bake": [
+    "penne pasta",
+    "pasta bake sauce",
+    "mozzerella",
+    "garlic bread"
+  ],
   "Enchiladas": [],
-  "Burrito Bowls": [],
+  "Burrito Bowls": [
+    "Chicken breast",
+    "red onion",
+    "tin of black beans",
+    "rice",
+    "Avocado",
+    "lime"
+    "burrito bowl spice pack",
+    "sweetcorn"
+  ],
   "Bangers and Mash": [],
   "Tuna Casserole": [],
   "Chicken Makhani": [],
   "Chicken Korma": []
+
