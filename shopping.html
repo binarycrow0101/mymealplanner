@@ -8,7 +8,7 @@
   body {
     font-family: 'Segoe UI', sans-serif;
     padding: 20px;
-    max-width: 700px;
+    max-width: 600px;
     margin: auto;
     background: #fafafa;
     color: #333;
@@ -16,24 +16,19 @@
 
   h1 {
     text-align: center;
-    margin-bottom: 10px;
-  }
-
-  h2, h3 {
-    margin-top: 25px;
-    color: #0077cc;
+    margin-bottom: 15px;
   }
 
   button {
     display: block;
     width: 100%;
-    padding: 14px;
-    margin: 20px 0;
+    padding: 16px;
+    margin: 10px 0;
     background: #0077cc;
     color: white;
     border: none;
     border-radius: 10px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     transition: background 0.2s;
   }
@@ -42,121 +37,122 @@
     background: #005fa3;
   }
 
-  #plan-summary {
+  .summary {
     background: white;
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
   }
 
-  #shopping-list {
-    margin-top: 25px;
+  .shopping-item {
+    padding: 10px 15px;
     background: white;
-    padding: 15px;
     border-radius: 10px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    max-height: 70vh;
-    overflow-y: auto;
-  }
-
-  .ingredient-item {
-    padding: 5px 0;
+    margin-bottom: 8px;
     cursor: pointer;
-    transition: color 0.2s, text-decoration 0.2s;
+    transition: background 0.2s;
   }
 
-  .ingredient-item:hover {
-    color: #0077cc;
+  .shopping-item:hover {
+    background: #f1f7ff;
   }
 
-  .crossed {
+  .checked {
     text-decoration: line-through;
-    color: #aaa;
+    color: gray;
+    background: #e0e0e0 !important;
   }
 
-  .meal-section {
-    margin-bottom: 25px;
+  .meal-header {
+    font-weight: bold;
+    margin-top: 15px;
   }
-
 </style>
 </head>
 <body>
 
 <h1>Weekly Shopping List</h1>
-<div id="plan-summary"></div>
+
+<div class="summary" id="summary"></div>
 <div id="shopping-list"></div>
-<button onclick="window.location.href='index.html'">Return to Main Page</button>
+
+<button onclick="exportList()">Export List</button>
+<button onclick="goBack()">Return to Main Page</button>
 
 <script>
-// 🥦 STEP 1: Ingredient data
+// Example ingredients JSON (edit/add freely)
 const ingredientsData = {
-  "General Tso Chicken": [
-    "Chicken breast", "Soy sauce", "Garlic", "Ginger", "Rice", "Cornstarch"
-  ],
-  "Taco's": [
-    "Tortillas", "Minced beef or turkey", "Lettuce", "Tomatoes", "Cheddar cheese", "Taco seasoning"
-  ],
-  "Jambalaya": [
-    "Rice", "Chicken thighs", "Sausage", "Bell peppers", "Onion", "Cajun seasoning"
-  ],
-  "Jerk Chicken": [
-    "Chicken legs", "Jerk seasoning", "Rice", "Scallions", "Lime"
-  ],
-  "Pasta and Red Sauce": [
-    "Pasta", "Tomato sauce", "Garlic", "Basil", "Parmesan cheese"
-  ],
-  "Salmon": [
-    "Salmon fillets", "Lemon", "Olive oil", "Salt", "Pepper"
-  ],
-  "Stir Fry": [
-    "Mixed vegetables", "Soy sauce", "Garlic", "Ginger", "Noodles or rice", "Sesame oil"
-  ],
-  "Minestrone soup": [
-    "Vegetable stock", "Carrots", "Beans", "Celery", "Tomatoes", "Pasta"
-  ],
-  "Pizza": [
-    "Pizza dough", "Tomato sauce", "Mozzarella", "Olive oil", "Toppings of choice"
-  ],
-  "Chicken Souvlaki": [
-    "Chicken breast", "Olive oil", "Lemon", "Garlic", "Oregano", "Pita bread"
-  ],
-  "Salad": [
-    "Lettuce", "Tomatoes", "Cucumber", "Olive oil", "Lemon juice"
-  ]
+  "General Tso Chicken": ["Chicken breast", "Soy sauce", "Garlic", "Rice"],
+  "Taco's": ["Tortillas", "Ground beef", "Cheddar cheese", "Lettuce", "Tomato"],
+  "Pasta and Red Sauce": ["Pasta", "Tomato sauce", "Parmesan cheese"],
+  "Chicken Souvlaki": ["Chicken breast", "Lemon", "Garlic", "Greek yogurt", "Pita bread"],
+  "Salad": ["Lettuce", "Cucumber", "Tomato", "Feta cheese"],
+  "Pizza": ["Pizza dough", "Mozzarella", "Tomato sauce"],
+  "Rotisserie Chicken": ["Whole chicken", "Olive oil", "Salt", "Pepper"],
+  "Fish Burgers": ["Fish fillets", "Burger buns", "Tartar sauce"],
+  "Bangers and Mash": ["Sausages", "Potatoes", "Butter", "Gravy mix"],
+  "Spaghetti Meatballs": ["Spaghetti", "Beef mince", "Breadcrumbs", "Tomato sauce"],
+  "Stir Fry": ["Mixed vegetables", "Soy sauce", "Noodles", "Chicken or tofu"]
 };
 
-// 🍅 STEP 2: Build shopping list from saved meal plan
-const plan = JSON.parse(localStorage.getItem("mealPlan"));
-const planSummary = document.getElementById("plan-summary");
-const shoppingList = document.getElementById("shopping-list");
+function loadShoppingList() {
+  const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan'));
+  if (!mealPlan) {
+    document.getElementById('summary').innerText = "No meal plan found. Please go back and generate one!";
+    return;
+  }
 
-if (!plan) {
-  planSummary.textContent = "No meal plan found. Go back and generate one!";
-} else {
-  // show weekly summary
-  planSummary.innerHTML = "<h2>This Week’s Meals</h2>" + 
-    plan.map(entry => `<div><strong>${entry.day}</strong>: ${entry.meal.name}</div>`).join("");
+  // Render summary
+  let summaryHTML = "<strong>This Week’s Meals:</strong><br>";
+  for (const [day, meal] of Object.entries(mealPlan)) {
+    summaryHTML += `${day}: ${meal}<br>`;
+  }
+  document.getElementById('summary').innerHTML = summaryHTML;
 
-  // build ingredients list by meal
-  plan.forEach(entry => {
-    const mealName = entry.meal.name;
-    const ingredients = ingredientsData[mealName] || ["(No ingredients listed yet)"];
-    
-    const section = document.createElement("div");
-    section.className = "meal-section";
-    section.innerHTML = `<h3>${mealName}</h3>`;
-    
-    ingredients.forEach(ing => {
-      const item = document.createElement("div");
-      item.className = "ingredient-item";
-      item.textContent = "• " + ing;
-      item.onclick = () => item.classList.toggle("crossed");
-      section.appendChild(item);
+  // Generate shopping list
+  const listDiv = document.getElementById('shopping-list');
+  listDiv.innerHTML = "";
+  for (const [day, meal] of Object.entries(mealPlan)) {
+    const header = document.createElement("div");
+    header.className = "meal-header";
+    header.textContent = `${day}: ${meal}`;
+    listDiv.appendChild(header);
+
+    const items = ingredientsData[meal] || ["Ingredients not listed yet"];
+    items.forEach(ingredient => {
+      const itemDiv = document.createElement("div");
+      itemDiv.className = "shopping-item";
+      itemDiv.textContent = ingredient;
+      itemDiv.onclick = () => itemDiv.classList.toggle("checked");
+      listDiv.appendChild(itemDiv);
     });
-
-    shoppingList.appendChild(section);
-  });
+  }
 }
+
+function goBack() {
+  window.location.href = "index.html";
+}
+
+function exportList() {
+  const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan')) || {};
+  let exportText = "WEEKLY MEAL PLAN:\n";
+  for (const [day, meal] of Object.entries(mealPlan)) {
+    exportText += `${day}: ${meal}\n`;
+    const items = ingredientsData[meal] || ["Ingredients not listed yet"];
+    items.forEach(i => exportText += `  - ${i}\n`);
+  }
+
+  const blob = new Blob([exportText], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "shopping_list.txt";
+  a.click();
+}
+
+loadShoppingList();
 </script>
 
 </body>
