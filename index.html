@@ -148,6 +148,7 @@ const meals = [
 let currentPlan = [];
 let currentSeed = null;
 
+// Deterministic random generator (so same seed = same meals)
 function seededRandom(seed) {
   let x = Math.sin(seed++) * 10000;
   return x - Math.floor(x);
@@ -189,8 +190,6 @@ function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
   }
 
   currentPlan = plan;
-  // Every new generation creates a new seed
-  currentSeed = Math.floor(Math.random() * 999999);
   saveMealPlan();
   renderPlan();
 }
@@ -233,20 +232,24 @@ function rerollMeal(index, element) {
   const newMeal = options[Math.floor(Math.random() * options.length)];
   currentPlan[index].meal = newMeal;
 
-  // new seed for manual change
-  currentSeed = Math.floor(Math.random() * 999999);
-  saveMealPlan();
-
   element.classList.add("highlight");
   setTimeout(() => element.classList.remove("highlight"), 400);
+
+  saveMealPlan();
   renderPlan();
 }
 
+// ✅ Updated save function with auto-seed for custom/manual plans
 function saveMealPlan() {
   const mealPlan = {};
   currentPlan.forEach(entry => {
     mealPlan[entry.day] = entry.meal.name;
   });
+
+  // Assign a new random seed if plan doesn’t have one
+  if (!currentSeed) {
+    currentSeed = Math.floor(Math.random() * 999999);
+  }
 
   localStorage.setItem('weeklyMealPlan', JSON.stringify(mealPlan));
   localStorage.setItem('mealSeed', currentSeed);
@@ -267,6 +270,7 @@ function loadFromSeed() {
   generateMealPlan(parseInt(input));
 }
 
+// Load saved plan
 window.onload = () => {
   const savedPlan = localStorage.getItem('weeklyMealPlan');
   const savedSeed = localStorage.getItem('mealSeed');
