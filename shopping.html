@@ -1,106 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shopping List</title>
-  <style>
-    body {
-      background-color: #0f1724;
-      color: white;
-      font-family: system-ui, sans-serif;
-      padding: 20px;
-      line-height: 1.6;
-    }
-    h1, h2 {
-      text-align: center;
-    }
-    #meal-summary {
-      background: #1e293b;
-      padding: 15px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      background: #1e293b;
-      margin: 8px 0;
-      padding: 10px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    li:hover {
-      background: #334155;
-    }
-    li.checked {
-      text-decoration: line-through;
-      color: #94a3b8;
-      background: #0f1724;
-    }
-    button {
-      display: block;
-      margin: 20px auto;
-      background: #8b5cf6;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #7c3aed;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopping List</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    padding: 20px;
+    max-width: 700px;
+    margin: auto;
+    background: #fafafa;
+    color: #333;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  h2, h3 {
+    margin-top: 25px;
+    color: #0077cc;
+  }
+
+  button {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    margin: 20px 0;
+    background: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  button:hover {
+    background: #005fa3;
+  }
+
+  #plan-summary {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  #shopping-list {
+    margin-top: 25px;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .ingredient-item {
+    padding: 5px 0;
+    cursor: pointer;
+    transition: color 0.2s, text-decoration 0.2s;
+  }
+
+  .ingredient-item:hover {
+    color: #0077cc;
+  }
+
+  .crossed {
+    text-decoration: line-through;
+    color: #aaa;
+  }
+
+  .meal-section {
+    margin-bottom: 25px;
+  }
+
+</style>
 </head>
 <body>
 
-  <h1>Weekly Shopping List</h1>
-  <div id="meal-summary"></div>
-  <h2>Ingredients</h2>
-  <ul id="ingredient-list"></ul>
+<h1>Weekly Shopping List</h1>
+<div id="plan-summary"></div>
+<div id="shopping-list"></div>
+<button onclick="window.location.href='index.html'">Return to Main Page</button>
 
-  <button onclick="goHome()">Return to Main Page</button>
+<script>
+// 🥦 STEP 1: Ingredient data
+const ingredientsData = {
+  "General Tso Chicken": [
+    "Chicken breast", "Soy sauce", "Garlic", "Ginger", "Rice", "Cornstarch"
+  ],
+  "Taco's": [
+    "Tortillas", "Minced beef or turkey", "Lettuce", "Tomatoes", "Cheddar cheese", "Taco seasoning"
+  ],
+  "Jambalaya": [
+    "Rice", "Chicken thighs", "Sausage", "Bell peppers", "Onion", "Cajun seasoning"
+  ],
+  "Jerk Chicken": [
+    "Chicken legs", "Jerk seasoning", "Rice", "Scallions", "Lime"
+  ],
+  "Pasta and Red Sauce": [
+    "Pasta", "Tomato sauce", "Garlic", "Basil", "Parmesan cheese"
+  ],
+  "Salmon": [
+    "Salmon fillets", "Lemon", "Olive oil", "Salt", "Pepper"
+  ],
+  "Stir Fry": [
+    "Mixed vegetables", "Soy sauce", "Garlic", "Ginger", "Noodles or rice", "Sesame oil"
+  ],
+  "Minestrone soup": [
+    "Vegetable stock", "Carrots", "Beans", "Celery", "Tomatoes", "Pasta"
+  ],
+  "Pizza": [
+    "Pizza dough", "Tomato sauce", "Mozzarella", "Olive oil", "Toppings of choice"
+  ],
+  "Chicken Souvlaki": [
+    "Chicken breast", "Olive oil", "Lemon", "Garlic", "Oregano", "Pita bread"
+  ],
+  "Salad": [
+    "Lettuce", "Tomatoes", "Cucumber", "Olive oil", "Lemon juice"
+  ]
+};
 
-  <script>
-    async function loadIngredients() {
-      const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan')) || {};
-      const response = await fetch('ingredients.json');
-      const ingredientsData = await response.json();
+// 🍅 STEP 2: Build shopping list from saved meal plan
+const plan = JSON.parse(localStorage.getItem("mealPlan"));
+const planSummary = document.getElementById("plan-summary");
+const shoppingList = document.getElementById("shopping-list");
 
-      // Display meal summary
-      const summaryDiv = document.getElementById('meal-summary');
-      summaryDiv.innerHTML = Object.entries(mealPlan)
-        .map(([day, meal]) => `<strong>${day}:</strong> ${meal}`)
-        .join('<br>');
+if (!plan) {
+  planSummary.textContent = "No meal plan found. Go back and generate one!";
+} else {
+  // show weekly summary
+  planSummary.innerHTML = "<h2>This Week’s Meals</h2>" + 
+    plan.map(entry => `<div><strong>${entry.day}</strong>: ${entry.meal.name}</div>`).join("");
 
-      // Build ingredients list
-      const listEl = document.getElementById('ingredient-list');
-      listEl.innerHTML = '';
-      const added = new Set(); // avoid duplicate ingredients
-      Object.values(mealPlan).forEach(meal => {
-        const ingredients = ingredientsData[meal] || [];
-        ingredients.forEach(item => {
-          if (!added.has(item)) {
-            const li = document.createElement('li');
-            li.textContent = item;
-            li.onclick = () => li.classList.toggle('checked');
-            listEl.appendChild(li);
-            added.add(item);
-          }
-        });
-      });
-    }
+  // build ingredients list by meal
+  plan.forEach(entry => {
+    const mealName = entry.meal.name;
+    const ingredients = ingredientsData[mealName] || ["(No ingredients listed yet)"];
+    
+    const section = document.createElement("div");
+    section.className = "meal-section";
+    section.innerHTML = `<h3>${mealName}</h3>`;
+    
+    ingredients.forEach(ing => {
+      const item = document.createElement("div");
+      item.className = "ingredient-item";
+      item.textContent = "• " + ing;
+      item.onclick = () => item.classList.toggle("crossed");
+      section.appendChild(item);
+    });
 
-    function goHome() {
-      window.location.href = 'index.html';
-    }
+    shoppingList.appendChild(section);
+  });
+}
+</script>
 
-    loadIngredients();
-  </script>
 </body>
 </html>
