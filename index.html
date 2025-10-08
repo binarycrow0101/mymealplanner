@@ -101,9 +101,6 @@
 <div id="meal-plan"></div>
 
 <script>
-/* -------------------------
-   Data & state
-   ------------------------- */
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 const meals = [
@@ -113,7 +110,7 @@ const meals = [
   {name:"Jerk Chicken",days:["Monday","Tuesday","Thursday","Friday"],health:4,core:"Chicken",type:"Rice"},
   {name:"Pasta and Red Sauce",days:["Wednesday"],health:3,core:"Veggie",type:"Pasta"},
   {name:"Cheddar Broccoli",days:["Monday","Tuesday","Thursday","Friday"],health:3,core:"Veggie",type:"Soup"},
-  {name:"Fish Burgers",days:["Monday","Tuesday","Thursday","Friday"],health:3,core:"Fish",type:"Burger"},
+  {name:"Fish Burgers",days:["Monday","Tuesday","Thursday","Friday"],health:3,core:"Veggie",type:"Burger"},
   {name:"Stir Fry",days:["Monday","Tuesday","Thursday","Friday"],health:5,core:"Mixed",type:"Asian"},
   {name:"Rotisserie Chicken",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Chicken",type:"Roast"},
   {name:"Take Out",days:["Friday","Saturday"],health:1,core:"Mixed",type:"Any"},
@@ -148,88 +145,48 @@ const meals = [
   {name:"Halloumi Tacos",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:4,core:"Veggie",type:"Mexican"},
 ];
 
-let currentPlan = [];        // array of {day, meal}
+let currentPlan = [];
 let currentSeed = null;
 
-/* -------------------------
-   Deterministic PRNG
-   ------------------------- */
-function seededRandom(n) {
-  // simple deterministic generator based on sin
-  const x = Math.sin(n) * 10000;
+// Deterministic random generator (so same seed = same meals)
+function seededRandom(seed) {
+  let x = Math.sin(seed++) * 10000;
   return x - Math.floor(x);
 }
 
-/* -------------------------
-   Meal generation
-   ------------------------- */
 function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
   currentSeed = seed;
   const planDiv = document.getElementById("meal-plan");
   planDiv.innerHTML = "";
 
   let plan = [];
+  let lastCore = null;
+  let lastType = null;
   let healthyCount = 0;
-  let localSeed = seed; // will be incremented as we draw, deterministic based on seed
+  let localSeed = seed;
 
-  // We'll attempt full-week generation; if healthy ratio fail, try again (advances localSeed deterministically)
   while (true) {
     plan = [];
+    lastCore = null;
+    lastType = null;
     healthyCount = 0;
-    let lastCore = null;
-    let lastType = null;
-    const used = new Set();
 
-    for (let dayIdx = 0; dayIdx < DAYS.length; dayIdx++) {
-      const day = DAYS[dayIdx];
-
-      // 1) Try: allowed-day & different core/type from previous & NOT used
+    for (let day of DAYS) {
       let options = meals.filter(m =>
         m.days.includes(day) &&
         m.core !== lastCore &&
-        m.type !== lastType &&
-        !used.has(m.name)
+        m.type !== lastType
       );
-
-      // 2) Fallback A: allowed-day & different core/type (allow used) — keeps variety but allows reuse if pool small
-      if (options.length === 0) {
-        options = meals.filter(m =>
-          m.days.includes(day) &&
-          m.core !== lastCore &&
-          m.type !== lastType
-        );
-      }
-
-      // 3) Fallback B: allowed-day & NOT used (ignore core/type)
-      if (options.length === 0) {
-        options = meals.filter(m =>
-          m.days.includes(day) &&
-          !used.has(m.name)
-        );
-      }
-
-      // 4) Final fallback: any allowed-day meal (may duplicate or match core/type)
-      if (options.length === 0) {
-        options = meals.filter(m => m.days.includes(day));
-      }
-
-      // pick deterministic index from options using localSeed
-      const idx = Math.floor(seededRandom(localSeed++) * options.length);
-      const chosen = options[idx];
-
-      plan.push({ day, meal: chosen });
-      used.add(chosen.name);
-      lastCore = chosen.core;
-      lastType = chosen.type;
-      if ((chosen.health || 0) >= 3) healthyCount++;
+      if (options.length === 0) options = meals.filter(m => m.days.includes(day));
+      const randIndex = Math.floor(seededRandom(localSeed++) * options.length);
+      let meal = options[randIndex];
+      plan.push({ day, meal });
+      lastCore = meal.core;
+      lastType = meal.type;
+      if (meal.health >= 3) healthyCount++;
     }
 
-    // check health ratio requirement (70%)
-    if ((healthyCount / DAYS.length) >= 0.7) {
-      break;
-    }
-
-    // else: loop again — localSeed has advanced so next loop will yield different picks deterministically
+    if ((healthyCount / DAYS.length) >= 0.7) break;
   }
 
   currentPlan = plan;
@@ -237,16 +194,13 @@ function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
   renderPlan();
 }
 
-/* -------------------------
-   Render & reroll logic
-   ------------------------- */
 function renderPlan() {
   const planDiv = document.getElementById("meal-plan");
   planDiv.innerHTML = "";
   let healthyCount = 0;
 
   currentPlan.forEach((entry, index) => {
-    if ((entry.meal.health || 0) >= 3) healthyCount++;
+    if (entry.meal.health >= 3) healthyCount++;
     const div = document.createElement("div");
     div.className = "meal";
     div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
@@ -256,15 +210,11 @@ function renderPlan() {
 
   const healthyLabel = document.createElement("div");
   healthyLabel.className = "healthy-label";
-  const percent = Math.round((healthyCount / DAYS.length) * 100);
-  healthyLabel.textContent = `Healthy meals this week: ${percent}%` + (currentSeed !== null ? ` (Seed #${currentSeed})` : " (Custom)");
+  healthyLabel.textContent = `Healthy meals this week: ${Math.round((healthyCount / DAYS.length) * 100)}% (Seed #${currentSeed})`;
   planDiv.appendChild(healthyLabel);
 }
 
 function rerollMeal(index, element) {
-  // When user rerolls a single day, the plan is now 'custom' — not representable by the saved seed.
-  currentSeed = null;
-
   const day = currentPlan[index].day;
   const prev = currentPlan[index - 1]?.meal;
   const next = currentPlan[index + 1]?.meal;
@@ -278,7 +228,7 @@ function rerollMeal(index, element) {
     m.type !== next?.type
   );
   if (options.length === 0) options = meals.filter(m => m.days.includes(day));
-
+  
   const newMeal = options[Math.floor(Math.random() * options.length)];
   currentPlan[index].meal = newMeal;
 
@@ -289,28 +239,22 @@ function rerollMeal(index, element) {
   renderPlan();
 }
 
-/* -------------------------
-   Save / Load
-   ------------------------- */
+// ✅ Updated save function with auto-seed for custom/manual plans
 function saveMealPlan() {
-  // Save as a simple mapping day -> mealName for shopping page compatibility
-  const mealPlanMap = {};
+  const mealPlan = {};
   currentPlan.forEach(entry => {
-    mealPlanMap[entry.day] = entry.meal.name;
+    mealPlan[entry.day] = entry.meal.name;
   });
-  localStorage.setItem('weeklyMealPlan', JSON.stringify(mealPlanMap));
 
-  // Save seed only if it's a pure seed-generated plan
-  if (currentSeed !== null && typeof currentSeed !== 'undefined') {
-    localStorage.setItem('mealSeed', String(currentSeed));
-  } else {
-    localStorage.removeItem('mealSeed');
+  // Assign a new random seed if plan doesn’t have one
+  if (!currentSeed) {
+    currentSeed = Math.floor(Math.random() * 999999);
   }
+
+  localStorage.setItem('weeklyMealPlan', JSON.stringify(mealPlan));
+  localStorage.setItem('mealSeed', currentSeed);
 }
 
-/* -------------------------
-   Helpers / Navigation
-   ------------------------- */
 function openShoppingList() {
   if (currentPlan.length === 0) {
     alert("Please generate your meal plan first!");
@@ -323,37 +267,22 @@ function openShoppingList() {
 function loadFromSeed() {
   const input = document.getElementById("seedInput").value;
   if (!input) return alert("Enter a seed number first!");
-  const seedNum = parseInt(input, 10);
-  if (isNaN(seedNum)) return alert("Invalid seed number.");
-  generateMealPlan(seedNum);
+  generateMealPlan(parseInt(input));
 }
 
-/* -------------------------
-   On load: restore saved plan (if any)
-   ------------------------- */
+// Load saved plan
 window.onload = () => {
   const savedPlan = localStorage.getItem('weeklyMealPlan');
   const savedSeed = localStorage.getItem('mealSeed');
-  if (savedPlan) {
-    // savedPlan stored as map { "Monday": "Stir Fry", ... }
-    try {
-      const parsed = JSON.parse(savedPlan);
-      currentSeed = (savedSeed ? parseInt(savedSeed, 10) : null);
-      currentPlan = DAYS.map(day => {
-        const mealName = parsed[day];
-        const foundMeal = meals.find(m => m.name === mealName);
-        return { day, meal: foundMeal || { name: mealName, health: 0, core: "", type: "" } };
-      });
-      renderPlan();
-      return;
-    } catch (e) {
-      // fallthrough to generate a new one if parse fails
-      console.warn("Failed to parse saved plan:", e);
-    }
+  if (savedPlan && savedSeed) {
+    const parsed = JSON.parse(savedPlan);
+    currentSeed = parseInt(savedSeed);
+    currentPlan = Object.entries(parsed).map(([day, mealName]) => {
+      const foundMeal = meals.find(m => m.name === mealName);
+      return { day, meal: foundMeal || { name: mealName, health: 0, core: "", type: "" } };
+    });
+    renderPlan();
   }
-
-  // if no saved plan, generate fresh seeded plan
-  generateMealPlan();
 };
 </script>
 
