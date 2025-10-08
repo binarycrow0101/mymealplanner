@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Polished Meal Planner</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+    background: #fafafa;
+    color: #333;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  button {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    margin: 25px 0;
+    background: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  button:hover {
+    background: #005fa3;
+  }
+
+  .meal {
+    margin: 8px 0;
+    padding: 16px;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .meal:active {
+    transform: scale(0.98);
+  }
+
+  .meal:hover {
+    background: #f1f7ff;
+  }
+
+  .highlight {
+    animation: flash 0.4s ease;
+  }
+
+  @keyframes flash {
+    from { background-color: #c8e6c9; }
+    to { background-color: white; }
+  }
+
+  .healthy-label {
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+    color: #2e7d32;
+  }
+</style>
+</head>
+<body>
+
+<h1>Weekly Meal Planner</h1>
+
+<button onclick="generateMealPlan()">Generate New Meal Plan</button>
+<button onclick="openShoppingList()">View Shopping List</button>
+
+<div id="meal-plan"></div>
+
+<script>
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+const meals = [
+  {name:"General Tso Chicken",days:["Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Asian"},
+  {name:"Taco's",days:["Tuesday","Thursday"],health:3,core:"Turkey",type:"Mexican"},
+  {name:"Jambalaya",days:["Monday","Tuesday","Thursday","Friday"],health:3,core:"Chicken",type:"Rice"},
+  {name:"Jerk Chicken",days:["Monday","Tuesday","Thursday","Friday"],health:4,core:"Chicken",type:"Rice"},
+  {name:"Pasta and Red Sauce",days:["Wednesday"],health:3,core:"Veggie",type:"Pasta"},
+  {name:"Cheddar Broccoli",days:["Monday","Tuesday","Thursday","Friday"],health:3,core:"Veggie",type:"Soup"},
+  {name:"Fish Burgers",days:["Monday","Tuesday","Thursday","Friday"],health:3,core:"Veggie",type:"Burger"},
+  {name:"Stir Fry",days:["Monday","Tuesday","Thursday","Friday"],health:5,core:"Mixed",type:"Asian"},
+  {name:"Rotisserie Chicken",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Chicken",type:"Roast"},
+  {name:"Take Out",days:["Friday","Saturday"],health:1,core:"Mixed",type:"Any"},
+  {name:"Chicken Souvlaki",days:["Monday","Tuesday","Thursday","Friday"],health:4,core:"Chicken",type:"Greek"},
+  {name:"Avacado Toast",days:["Monday","Tuesday","Thursday","Friday","Saturday"],health:4,core:"Veggie",type:"Breakfast"},
+  {name:"Chicken parm",days:["Monday","Tuesday","Thursday","Friday","Saturday"],health:2,core:"Chicken",type:"Pasta"},
+  {name:"Roast Chicken",days:["Sunday"],health:4,core:"Chicken",type:"Roast"},
+  {name:"Tomato Basil Chicken",days:["Saturday","Sunday"],health:4,core:"Chicken",type:"Roast"},
+  {name:"Minestrone soup",days:["Saturday","Sunday"],health:5,core:"Veggie",type:"Soup"},
+  {name:"Artichoke risotto",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Veggie",type:"Risotto"},
+  {name:"Pizza",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Veggie",type:"Pizza"},
+  {name:"Salad",days:["Monday","Tuesday","Thursday","Friday","Saturday"],health:5,core:"Veggie",type:"Salad"},
+  {name:"Fajitas",days:["Tuesday","Thursday"],health:4,core:"Chicken",type:"Mexican"},
+  {name:"Spaghetti Meatballs",days:["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Beef",type:"Pasta"},
+  {name:"Cheese and Biscuits",days:["Friday","Saturday","Sunday"],health:1,core:"Mixed",type:"Snacky"},
+  {name:"Buffalo Wing Dip",days:["Saturday","Sunday"],health:1,core:"Chicken",type:"Snacky"},
+  {name:"BBQ pasta",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Beef",type:"Pasta"},
+  {name:"Salmon",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:5,core:"Fish",type:"Asian"},
+  {name:"Garlic Noodles",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Mixed",type:"Noodles"},
+  {name:"M&S Dine In",days:["Friday","Saturday","Sunday"],health:2,core:"Mixed",type:"Any"},
+  {name:"Beef Burgers",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Beef",type:"Burger"},
+  {name:"Chicken Burgers",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Chicken",type:"Burger"},
+  {name:"Turkey Burgers",days:["Friday","Saturday","Sunday"],health:4,core:"Turkey",type:"Burger"},
+  {name:"Pasta Bake",days:["Wednesday"],health:2,core:"Veggie",type:"Pasta"},
+  {name:"Enchilades",days:["Tuesday","Thursday"],health:3,core:"Mixed",type:"Mexican"},
+  {name:"Burrito Bowls",days:["Tuesday","Thursday"],health:4,core:"Mixed",type:"Mexican"},
+  {name:"Bangers and Mash",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Mixed",type:"Heavy"},
+  {name:"Tuna Casserole",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Fish",type:"Pasta"},
+  {name:"Chicken Mackahani",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Indian"},
+  {name:"Chicken Korma",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Indian"},
+  {name:"Sticky Mushrooms",days:["Friday","Saturday","Sunday"],health:3,core:"Veggie",type:"Asian"},
+  {name:"Halloumi Tacos",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:4,core:"Veggie",type:"Mexican"},
+];
+
+let currentPlan = [];
+
+function generateMealPlan() {
+  const planDiv = document.getElementById("meal-plan");
+  planDiv.innerHTML = "";
+
+  let plan = [];
+  let lastCore = null;
+  let lastType = null;
+  let healthyCount = 0;
+
+  while (true) {
+    plan = [];
+    lastCore = null;
+    lastType = null;
+    healthyCount = 0;
+
+    for (let day of DAYS) {
+      let options = meals.filter(m =>
+        m.days.includes(day) &&
+        m.core !== lastCore &&
+        m.type !== lastType
+      );
+      if (options.length === 0) options = meals.filter(m => m.days.includes(day));
+      let meal = options[Math.floor(Math.random() * options.length)];
+      plan.push({ day, meal });
+      lastCore = meal.core;
+      lastType = meal.type;
+      if (meal.health >= 3) healthyCount++;
+    }
+
+    if ((healthyCount / DAYS.length) >= 0.7) break;
+  }
+
+  currentPlan = plan;
+  saveMealPlan(); // <-- new
+  renderPlan();
+}
+
+function renderPlan() {
+  const planDiv = document.getElementById("meal-plan");
+  planDiv.innerHTML = "";
+  let healthyCount = 0;
+
+  currentPlan.forEach((entry, index) => {
+    if (entry.meal.health >= 3) healthyCount++;
+    const div = document.createElement("div");
+    div.className = "meal";
+    div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
+    div.onclick = () => rerollMeal(index, div);
+    planDiv.appendChild(div);
+  });
+
+  const healthyLabel = document.createElement("div");
+  healthyLabel.className = "healthy-label";
+  healthyLabel.textContent = `Healthy meals this week: ${Math.round((healthyCount / DAYS.length) * 100)}%`;
+  planDiv.appendChild(healthyLabel);
+}
+
+function rerollMeal(index, element) {
+  const day = currentPlan[index].day;
+  const prev = currentPlan[index - 1]?.meal;
+  const next = currentPlan[index + 1]?.meal;
+
+  let options = meals.filter(m =>
+    m.days.includes(day) &&
+    m.name !== currentPlan[index].meal.name &&
+    m.core !== prev?.core &&
+    m.type !== prev?.type &&
+    m.core !== next?.core &&
+    m.type !== next?.type
+  );
+  if (options.length === 0) options = meals.filter(m => m.days.includes(day));
+  
+  const newMeal = options[Math.floor(Math.random() * options.length)];
+  currentPlan[index].meal = newMeal;
+
+  element.classList.add("highlight");
+  setTimeout(() => element.classList.remove("highlight"), 400);
+
+  saveMealPlan(); // <-- new
+  renderPlan();
+}
+
+// NEW: Save the plan to localStorage for the shopping list page
+function saveMealPlan() {
+  const mealPlan = {};
+  currentPlan.forEach(entry => {
+    mealPlan[entry.day] = entry.meal.name;
+  });
+  localStorage.setItem('weeklyMealPlan', JSON.stringify(mealPlan));
+}
+
+// NEW: open shopping list page
+function openShoppingList() {
+  if (currentPlan.length === 0) {
+    alert("Please generate your meal plan first!");
+    return;
+  }
+  saveMealPlan();
+  window.location.href = 'shopping.html';
+}
+
+// generate plan on first load
+generateMealPlan();
+</script>
+
+</body>
+</html>

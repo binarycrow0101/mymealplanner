@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping List</title>
+  <style>
+    body {
+      background-color: #0f1724;
+      color: white;
+      font-family: system-ui, sans-serif;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    #meal-summary {
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #1e293b;
+      margin: 8px 0;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    li:hover {
+      background: #334155;
+    }
+    li.checked {
+      text-decoration: line-through;
+      color: #94a3b8;
+      background: #0f1724;
+    }
+    button {
+      display: block;
+      margin: 20px auto;
+      background: #8b5cf6;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #7c3aed;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Weekly Shopping List</h1>
+  <div id="meal-summary"></div>
+  <h2>Ingredients</h2>
+  <ul id="ingredient-list"></ul>
+
+  <button onclick="goHome()">Return to Main Page</button>
+
+  <script>
+    async function loadIngredients() {
+      const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan')) || {};
+      const response = await fetch('ingredients.json');
+      const ingredientsData = await response.json();
+
+      // Display meal summary
+      const summaryDiv = document.getElementById('meal-summary');
+      summaryDiv.innerHTML = Object.entries(mealPlan)
+        .map(([day, meal]) => `<strong>${day}:</strong> ${meal}`)
+        .join('<br>');
+
+      // Build ingredients list
+      const listEl = document.getElementById('ingredient-list');
+      listEl.innerHTML = '';
+      const added = new Set(); // avoid duplicate ingredients
+      Object.values(mealPlan).forEach(meal => {
+        const ingredients = ingredientsData[meal] || [];
+        ingredients.forEach(item => {
+          if (!added.has(item)) {
+            const li = document.createElement('li');
+            li.textContent = item;
+            li.onclick = () => li.classList.toggle('checked');
+            listEl.appendChild(li);
+            added.add(item);
+          }
+        });
+      });
+    }
+
+    function goHome() {
+      window.location.href = 'index.html';
+    }
+
+    loadIngredients();
+  </script>
+</body>
+</html>
