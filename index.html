@@ -229,9 +229,22 @@ function openShoppingList() {
   window.location.href = 'shopping.html';
 }
 
-// generate plan on first load
-generateMealPlan();
+// Load saved meal plan or generate a new one
+window.onload = () => {
+  const savedPlan = localStorage.getItem('weeklyMealPlan');
+  if (savedPlan) {
+    const parsed = JSON.parse(savedPlan);
+    currentPlan = Object.entries(parsed).map(([day, mealName]) => {
+      const foundMeal = meals.find(m => m.name === mealName);
+      return { day, meal: foundMeal || { name: mealName, health: 0, core: "", type: "" } };
+    });
+    renderPlan();
+  } else {
+    generateMealPlan();
+  }
+};
 </script>
 
 </body>
 </html>
+
