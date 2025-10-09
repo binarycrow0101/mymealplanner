@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shopping List</title>
+<title>Weekly Shopping List</title>
 <style>
   body {
     font-family: 'Segoe UI', sans-serif;
@@ -69,6 +69,12 @@
     font-weight: bold;
     margin-top: 15px;
   }
+
+  .empty-message {
+    text-align: center;
+    color: #777;
+    margin-top: 30px;
+  }
 </style>
 </head>
 <body>
@@ -82,25 +88,51 @@
 <button onclick="goBack()">Return to Main Page</button>
 
 <script>
-let meals = [];
+// 🔹 Ingredient mappings — you can freely expand this
+const ingredientsData = {
+  "General Tso Chicken": ["Chicken breast", "Soy sauce", "Garlic", "Ginger", "Rice", "Cornflour", "Broccoli"],
+  "Taco's": ["Minced beef/turkey","Taco shells","Taco mix", "Lettuce", "Cheddar cheese","Tomatoes","Sour cream"],
+  "Pasta and Red Sauce": ["Rigatoni pasta", "Tomato sauce", "Mozzarella cheese", "Garlic bread"],
+  "Chicken Souvlaki": ["Chicken breast", "Lemon", "Garlic", "Tzatziki sauce", "Pita bread", "Olive oil", "Oregano", "Bell peppers", "Chips", "Tomatoes", "Lettuce"],
+  "Salad": ["Breaded chicken fillets", "Lettuce", "Cucumber", "Tomato", "Feta cheese", "Pomegranate", "Eggs", "Ranch dressing"],
+  "Pizza": ["Pizzas"],
+  "Rotisserie Chicken": ["Whole chicken", "Green beans", "Potatoes or Chips", "Gravy"],
+  "Fish Burgers": ["Fish fillets", "Burger buns", "Franks hot sauce", "Cheese slices", "Lettuce", "Tomatoes", "Chips", "Asparagus"],
+  "Bangers and Mash": ["Sausages", "Potatoes", "Butter", "Onion gravy mix"],
+  "Spaghetti Meatballs": ["Spaghetti", "Meatballs", "Red sauce", "Mozzarella"],
+  "Stir Fry": ["Egg noodles", "Chicken breast or shrimp", "Hoisin sauce", "Sugar snap peas", "Cashew nuts", "Honey", "Soy sauce", "Garlic", "Ginger"],
+  "Jambalaya": ["Rice", "Chicken thighs", "Chorizo", "Prawns", "Bell peppers", "Onion", "Celery", "Jambalaya kit"],
+  "Jerk Chicken": ["Chicken thighs", "Jerk seasoning", "Lime", "Rice", "Coconut milk", "Kidney beans", "Sweetcorn"],
+  "Cheddar Broccoli": ["Broccoli", "Cheddar", "Butter", "Onion", "Garlic", "Flour", "Cream"],
+  "Chicken parm": ["Chicken breast", "Breadcrumbs", "Mozzarella", "Tomato sauce", "Pasta"],
+  "Take Out": ["No ingredients needed!"],
+  "Avacado Toast": ["Bread", "Avocado", "Lemon juice", "Olive oil", "Salt", "Pepper"],
+  "Roast Chicken": ["Whole chicken", "Potatoes", "Carrots", "Gravy mix"],
+  "Tomato Basil Chicken": ["Chicken breast", "Tomatoes", "Basil", "Garlic", "Olive oil"],
+  "Minestrone soup": ["Mixed vegetables", "Pasta", "Tomatoes", "Beans", "Vegetable broth"],
+  "Artichoke risotto": ["Arborio rice", "Artichokes", "Garlic", "Parmesan", "Vegetable stock"],
+  "Beef Burgers": ["Beef mince", "Burger buns", "Cheese slices", "Lettuce", "Tomatoes"],
+  "Chicken Burgers": ["Chicken breast", "Burger buns", "Cheese slices", "Lettuce", "Tomatoes"],
+  "Turkey Burgers": ["Turkey mince", "Burger buns", "Cheese slices", "Lettuce", "Tomatoes"],
+  "Pasta Bake": ["Pasta", "Cheese", "Tomato sauce"],
+  "Enchilades": ["Tortillas", "Chicken", "Cheese", "Enchilada sauce"],
+  "Burrito Bowls": ["Rice", "Chicken or beef", "Black beans", "Corn", "Salsa", "Avocado"],
+  "Bangers and Mash": ["Sausages", "Potatoes", "Butter", "Onion gravy mix"],
+  "Tuna Casserole": ["Tuna", "Pasta", "Cream of mushroom soup", "Peas", "Cheddar cheese"],
+  "Chicken Mackahani": ["Chicken", "Butter", "Tomatoes", "Cream", "Garlic", "Garam masala"],
+  "Chicken Korma": ["Chicken", "Coconut milk", "Korma paste", "Rice"],
+  "Sticky Mushrooms": ["Mushrooms", "Soy sauce", "Honey", "Garlic", "Rice"],
+  "Halloumi Tacos": ["Halloumi", "Taco shells", "Lettuce", "Tomatoes", "Yogurt sauce"]
+};
 
-// Load meals from the same JSON file used by the generator
-fetch("Weeklymealgenerator.json")
-  .then(res => res.json())
-  .then(data => {
-    meals = data;
-    loadShoppingList();
-  })
-  .catch(err => {
-    console.error("Error loading meal data:", err);
-    loadShoppingList(); // still show summary if JSON fails
-  });
-
+// 🔹 Load the shopping list
 function loadShoppingList() {
-  const mealPlan = JSON.parse(localStorage.getItem('mealPlan'));
+  const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan'));
+  const summaryDiv = document.getElementById('summary');
+  const listDiv = document.getElementById('shopping-list');
+
   if (!mealPlan) {
-    document.getElementById('summary').innerText =
-      "No meal plan found. Please go back and generate one!";
+    summaryDiv.innerHTML = "<p class='empty-message'>No meal plan found. Please go back and generate one first.</p>";
     return;
   }
 
@@ -109,21 +141,17 @@ function loadShoppingList() {
   for (const [day, meal] of Object.entries(mealPlan)) {
     summaryHTML += `${day}: ${meal}<br>`;
   }
-  document.getElementById('summary').innerHTML = summaryHTML;
+  summaryDiv.innerHTML = summaryHTML;
 
-  // Generate shopping list
-  const listDiv = document.getElementById('shopping-list');
+  // Generate shopping list grouped by meal
   listDiv.innerHTML = "";
-
   for (const [day, meal] of Object.entries(mealPlan)) {
     const header = document.createElement("div");
     header.className = "meal-header";
     header.textContent = `${day}: ${meal}`;
     listDiv.appendChild(header);
 
-    const recipe = meals.find(m => m.Recipe === meal);
-    const items = recipe?.Ingredients?.length ? recipe.Ingredients : ["Ingredients not listed yet"];
-
+    const items = ingredientsData[meal] || ["Ingredients not listed yet"];
     items.forEach(ingredient => {
       const itemDiv = document.createElement("div");
       itemDiv.className = "shopping-item";
@@ -134,14 +162,15 @@ function loadShoppingList() {
   }
 }
 
+// 🔹 Export to text file
 function exportList() {
-  const mealPlan = JSON.parse(localStorage.getItem('mealPlan')) || {};
-  let exportText = "WEEKLY MEAL PLAN:\n";
+  const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan')) || {};
+  let exportText = "WEEKLY MEAL PLAN:\n\n";
   for (const [day, meal] of Object.entries(mealPlan)) {
     exportText += `${day}: ${meal}\n`;
-    const recipe = meals.find(m => m.Recipe === meal);
-    const items = recipe?.Ingredients?.length ? recipe.Ingredients : ["Ingredients not listed yet"];
+    const items = ingredientsData[meal] || ["Ingredients not listed yet"];
     items.forEach(i => (exportText += `  - ${i}\n`));
+    exportText += "\n";
   }
 
   const blob = new Blob([exportText], { type: "text/plain" });
@@ -152,9 +181,13 @@ function exportList() {
   a.click();
 }
 
+// 🔹 Return button
 function goBack() {
   window.location.href = "index.html";
 }
+
+// 🔹 Initialize
+window.onload = loadShoppingList;
 </script>
 
 </body>
