@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Weekly Meal Planner</title>
 <style>
   body {
@@ -38,7 +38,6 @@
   }
 
   .meal {
-    position: relative;
     margin: 8px 0;
     padding: 16px;
     border-radius: 10px;
@@ -54,50 +53,6 @@
 
   .meal:hover {
     background: #f1f7ff;
-  }
-
-  .menu-btn {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #444;
-    font-size: 22px;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 50%;
-    line-height: 1;
-    transition: background 0.2s, color 0.2s;
-  }
-
-  .menu-btn:hover {
-    background: #eef6ff;
-    color: #0077cc;
-  }
-
-  .dropdown-menu {
-    position: absolute;
-    right: 10px;
-    top: 100%;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    margin-top: 6px;
-    z-index: 200;
-    overflow: hidden;
-  }
-
-  .dropdown-item {
-    padding: 10px 14px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 0.2s;
-  }
-
-  .dropdown-item:hover {
-    background: #eef6ff;
   }
 
   .highlight {
@@ -192,7 +147,6 @@ const meals = [
 
 let currentPlan = [];
 let currentSeed = null;
-let dropdownOpen = false;
 
 function seededRandom(seed) {
   let x = Math.sin(seed++) * 10000;
@@ -201,6 +155,9 @@ function seededRandom(seed) {
 
 function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
   currentSeed = seed;
+  const planDiv = document.getElementById("meal-plan");
+  planDiv.innerHTML = "";
+
   let plan = [];
   let lastCore = null;
   let lastType = null;
@@ -227,10 +184,12 @@ function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
       lastType = meal.type;
       if (meal.health >= 3) healthyCount++;
     }
+
     if ((healthyCount / DAYS.length) >= 0.7) break;
   }
 
   currentPlan = plan;
+  // Every new generation creates a new seed
   currentSeed = Math.floor(Math.random() * 999999);
   saveMealPlan();
   renderPlan();
@@ -243,76 +202,17 @@ function renderPlan() {
 
   currentPlan.forEach((entry, index) => {
     if (entry.meal.health >= 3) healthyCount++;
-
     const div = document.createElement("div");
     div.className = "meal";
     div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
-
-    const btn = document.createElement("button");
-    btn.className = "menu-btn";
-    btn.textContent = "⋮";
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      toggleDropdown(div, entry.day, index);
-    };
-
-    div.appendChild(btn);
-
-    div.addEventListener("click", () => {
-      if (!dropdownOpen) rerollMeal(index, div);
-    });
-
+    div.onclick = () => rerollMeal(index, div);
     planDiv.appendChild(div);
   });
 
-  const label = document.createElement("div");
-  label.className = "healthy-label";
-  label.textContent = `Healthy meals this week: ${Math.round((healthyCount / DAYS.length) * 100)}% (Seed #${currentSeed})`;
-  planDiv.appendChild(label);
-}
-
-function toggleDropdown(parent, day, index) {
-  document.querySelectorAll(".dropdown-menu").forEach(el => el.remove());
-  dropdownOpen = true;
-
-  const menu = document.createElement("div");
-  menu.className = "dropdown-menu";
-  const options = meals.filter(m => m.days.includes(day));
-
-  options.forEach(meal => {
-    const item = document.createElement("div");
-    item.className = "dropdown-item";
-    item.textContent = meal.name;
-    item.onclick = (e) => {
-      e.stopPropagation();
-      chooseMeal(index, meal);
-      menu.remove();
-      dropdownOpen = false;
-    };
-    menu.appendChild(item);
-  });
-
-  parent.appendChild(menu);
-
-  setTimeout(() => {
-    function closeOutside(ev) {
-      if (!menu.contains(ev.target)) {
-        menu.remove();
-        dropdownOpen = false;
-        document.removeEventListener("click", closeOutside);
-        document.removeEventListener("touchstart", closeOutside);
-      }
-    }
-    document.addEventListener("click", closeOutside);
-    document.addEventListener("touchstart", closeOutside);
-  }, 10);
-}
-
-function chooseMeal(index, meal) {
-  currentPlan[index].meal = meal;
-  currentSeed = Math.floor(Math.random() * 999999);
-  saveMealPlan();
-  renderPlan();
+  const healthyLabel = document.createElement("div");
+  healthyLabel.className = "healthy-label";
+  healthyLabel.textContent = `Healthy meals this week: ${Math.round((healthyCount / DAYS.length) * 100)}% (Seed #${currentSeed})`;
+  planDiv.appendChild(healthyLabel);
 }
 
 function rerollMeal(index, element) {
@@ -329,11 +229,14 @@ function rerollMeal(index, element) {
     m.type !== next?.type
   );
   if (options.length === 0) options = meals.filter(m => m.days.includes(day));
-
+  
   const newMeal = options[Math.floor(Math.random() * options.length)];
   currentPlan[index].meal = newMeal;
+
+  // new seed for manual change
   currentSeed = Math.floor(Math.random() * 999999);
   saveMealPlan();
+
   element.classList.add("highlight");
   setTimeout(() => element.classList.remove("highlight"), 400);
   renderPlan();
@@ -341,7 +244,10 @@ function rerollMeal(index, element) {
 
 function saveMealPlan() {
   const mealPlan = {};
-  currentPlan.forEach(entry => mealPlan[entry.day] = entry.meal.name);
+  currentPlan.forEach(entry => {
+    mealPlan[entry.day] = entry.meal.name;
+  });
+
   localStorage.setItem('weeklyMealPlan', JSON.stringify(mealPlan));
   localStorage.setItem('mealSeed', currentSeed);
 }
