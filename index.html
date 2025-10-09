@@ -39,20 +39,67 @@
 
   .meal {
     margin: 8px 0;
-    padding: 16px;
+    padding: 16px 12px;
     border-radius: 10px;
     background: white;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     cursor: pointer;
     transition: background 0.2s, transform 0.1s;
+    position: relative;
+  }
+
+  .meal:hover {
+    background: #f1f7ff;
   }
 
   .meal:active {
     transform: scale(0.98);
   }
 
-  .meal:hover {
-    background: #f1f7ff;
+  .meal-text {
+    flex: 1;
+  }
+
+  .menu-btn {
+    background: transparent;
+    color: #444;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 6px;
+  }
+
+  .menu-btn:hover {
+    color: #0077cc;
+    transform: scale(1.1);
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    right: 12px;
+    top: 50px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 4px 0;
+    width: 80%;
+    max-width: 280px;
+  }
+
+  .dropdown-item {
+    padding: 8px 10px;
+    cursor: pointer;
+  }
+
+  .dropdown-item:hover {
+    background: #eef6ff;
   }
 
   .highlight {
@@ -189,7 +236,6 @@ function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
   }
 
   currentPlan = plan;
-  // Every new generation creates a new seed
   currentSeed = Math.floor(Math.random() * 999999);
   saveMealPlan();
   renderPlan();
@@ -202,10 +248,25 @@ function renderPlan() {
 
   currentPlan.forEach((entry, index) => {
     if (entry.meal.health >= 3) healthyCount++;
+
     const div = document.createElement("div");
     div.className = "meal";
-    div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
-    div.onclick = () => rerollMeal(index, div);
+
+    const text = document.createElement("div");
+    text.className = "meal-text";
+    text.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
+    text.onclick = () => rerollMeal(index, div);
+
+    const menuBtn = document.createElement("button");
+    menuBtn.className = "menu-btn";
+    menuBtn.textContent = "⋮";
+    menuBtn.onclick = (e) => {
+      e.stopPropagation();
+      toggleDropdown(div, entry.day, index);
+    };
+
+    div.appendChild(text);
+    div.appendChild(menuBtn);
     planDiv.appendChild(div);
   });
 
@@ -213,6 +274,56 @@ function renderPlan() {
   healthyLabel.className = "healthy-label";
   healthyLabel.textContent = `Healthy meals this week: ${Math.round((healthyCount / DAYS.length) * 100)}% (Seed #${currentSeed})`;
   planDiv.appendChild(healthyLabel);
+}
+
+function toggleDropdown(actionsContainer, day, index) {
+  // remove existing dropdowns
+  document.querySelectorAll(".dropdown-menu").forEach(el => el.remove());
+
+  const menu = document.createElement("div");
+  menu.className = "dropdown-menu";
+
+  const options = meals.filter(m => m.days.includes(day));
+  options.forEach((meal) => {
+    const item = document.createElement("div");
+    item.className = "dropdown-item";
+    item.textContent = meal.name;
+
+    const handler = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      chooseMeal(index, meal);
+      menu.remove();
+    };
+
+    // Support iOS + desktop
+    item.addEventListener("click", handler, { passive: false });
+    item.addEventListener("touchstart", handler, { passive: false });
+
+    menu.appendChild(item);
+  });
+
+  actionsContainer.appendChild(menu);
+
+  // close on click outside
+  setTimeout(() => {
+    function outsideHandler(ev) {
+      if (!menu.contains(ev.target) && !actionsContainer.contains(ev.target)) {
+        menu.remove();
+        document.removeEventListener("click", outsideHandler);
+        document.removeEventListener("touchstart", outsideHandler);
+      }
+    }
+    document.addEventListener("click", outsideHandler);
+    document.addEventListener("touchstart", outsideHandler);
+  }, 10);
+}
+
+function chooseMeal(index, meal) {
+  currentPlan[index].meal = meal;
+  currentSeed = Math.floor(Math.random() * 999999);
+  saveMealPlan();
+  renderPlan();
 }
 
 function rerollMeal(index, element) {
@@ -229,11 +340,10 @@ function rerollMeal(index, element) {
     m.type !== next?.type
   );
   if (options.length === 0) options = meals.filter(m => m.days.includes(day));
-  
+
   const newMeal = options[Math.floor(Math.random() * options.length)];
   currentPlan[index].meal = newMeal;
 
-  // new seed for manual change
   currentSeed = Math.floor(Math.random() * 999999);
   saveMealPlan();
 
@@ -281,7 +391,5 @@ window.onload = () => {
   }
 };
 </script>
-
 </body>
 </html>
-
