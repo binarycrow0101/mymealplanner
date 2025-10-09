@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Super Polished Meal Planner</title>
 <style>
   body {
@@ -19,8 +19,7 @@
     margin-bottom: 10px;
   }
 
-  /* Only apply large blue style to main buttons */
-  button:not(.menu-btn) {
+  button {
     display: block;
     width: 100%;
     padding: 18px;
@@ -34,99 +33,26 @@
     transition: background 0.2s;
   }
 
-  button:not(.menu-btn):hover {
+  button:hover {
     background: #005fa3;
   }
 
-  /* Each meal row is a flex container: left text, right actions */
   .meal {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     margin: 8px 0;
-    padding: 14px 16px;
+    padding: 16px;
     border-radius: 10px;
     background: white;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     cursor: pointer;
     transition: background 0.2s, transform 0.1s;
-    position: relative;
   }
 
-  .meal:hover { background: #f1f7ff; }
-  .meal:active { transform: scale(0.98); }
-
-  .meal-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-    min-width: 0; /* allow text truncation if needed */
+  .meal:active {
+    transform: scale(0.98);
   }
 
-  .meal-left strong { width: 90px; flex-shrink: 0; } /* day label fixed width */
-
-  .meal-title {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* small action area to the right; relative so menu can be absolute to it */
-  .meal-actions {
-    position: relative;
-    flex: 0 0 auto;
-    margin-left: 8px;
-  }
-
-  .menu-btn {
-    background: transparent;
-    color: #555;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    line-height: 1;
-    padding: 6px;
-    border-radius: 6px;
-    transition: background 0.15s, transform 0.12s, color 0.15s;
-  }
-
-  .menu-btn:hover {
-    background: #eef6ff;
-    color: #0077cc;
-    transform: scale(1.08);
-  }
-
-  .dropdown-menu {
-    position: absolute;
-    right: 0;
-    top: calc(100% + 6px);
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-    z-index: 2000;
-    max-height: 220px;
-    overflow-y: auto;
-    padding: 6px 0;
-    min-width: 220px;
-    animation: fadeIn 0.12s ease forwards;
-    transform-origin: top right;
-    opacity: 0; transform: scale(0.97);
-  }
-
-  @keyframes fadeIn {
-    to { opacity: 1; transform: scale(1); }
-  }
-
-  .dropdown-item {
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-
-  .dropdown-item:hover {
-    background: #eef6ff;
+  .meal:hover {
+    background: #f1f7ff;
   }
 
   .highlight {
@@ -175,7 +101,7 @@
 <div id="meal-plan"></div>
 
 <script>
-const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 const meals = [
   {name:"General Tso Chicken",days:["Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Asian"},
@@ -263,6 +189,7 @@ function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
   }
 
   currentPlan = plan;
+  // Every new generation creates a new seed
   currentSeed = Math.floor(Math.random() * 999999);
   saveMealPlan();
   renderPlan();
@@ -275,33 +202,10 @@ function renderPlan() {
 
   currentPlan.forEach((entry, index) => {
     if (entry.meal.health >= 3) healthyCount++;
-
     const div = document.createElement("div");
     div.className = "meal";
-
-    // left side: day + meal text
-    const left = document.createElement("div");
-    left.className = "meal-left";
-    left.onclick = () => rerollMeal(index, div); // clicking left rerolls only
-    left.innerHTML = `<strong>${entry.day}</strong><div class="meal-title">${entry.meal.name}</div>`;
-
-    // right side: actions
-    const actions = document.createElement("div");
-    actions.className = "meal-actions";
-
-    const menuBtn = document.createElement("button");
-    menuBtn.className = "menu-btn";
-    menuBtn.setAttribute("aria-label", "Open meal chooser");
-    menuBtn.textContent = "⋮";
-    // stop propagation so parent click (reroll) doesn't run
-    menuBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleDropdown(actions, entry.day, index);
-    });
-
-    actions.appendChild(menuBtn);
-    div.appendChild(left);
-    div.appendChild(actions);
+    div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
+    div.onclick = () => rerollMeal(index, div);
     planDiv.appendChild(div);
   });
 
@@ -309,61 +213,6 @@ function renderPlan() {
   healthyLabel.className = "healthy-label";
   healthyLabel.textContent = `Healthy meals this week: ${Math.round((healthyCount / DAYS.length) * 100)}% (Seed #${currentSeed})`;
   planDiv.appendChild(healthyLabel);
-}
-
-function toggleDropdown(actionsContainer, day, index) {
-  // remove any other menu
-  document.querySelectorAll(".dropdown-menu").forEach(el => el.remove());
-
-  const menu = document.createElement("div");
-  menu.className = "dropdown-menu";
-  // store index on menu so items can read correct row even if things re-render
-  menu.dataset.rowIndex = String(index);
-
-  const options = meals.filter(m => m.days.includes(day));
-  options.forEach((meal) => {
-    const item = document.createElement("div");
-    item.className = "dropdown-item";
-    item.textContent = meal.name;
-    // store meal name (or index) on the item
-    item.dataset.mealName = meal.name;
-    item.dataset.rowIndex = String(index);
-    item.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const row = parseInt(item.dataset.rowIndex, 10);
-      const mealName = item.dataset.mealName;
-      // find the meal object by name (names are unique in your data)
-      const chosen = meals.find(m => m.name === mealName);
-      if (typeof row === "number" && chosen) {
-        chooseMeal(row, chosen);
-      }
-      // close menu after choosing
-      menu.remove();
-    });
-    menu.appendChild(item);
-  });
-
-  actionsContainer.appendChild(menu);
-
-  // click outside to close
-  setTimeout(() => {
-    function outsideHandler(ev) {
-      if (!menu.contains(ev.target) && !actionsContainer.contains(ev.target)) {
-        menu.remove();
-        document.removeEventListener("click", outsideHandler);
-      }
-    }
-    document.addEventListener("click", outsideHandler);
-  }, 10);
-}
-
-function chooseMeal(index, meal) {
-  // ensure index still valid
-  if (index < 0 || index >= currentPlan.length) return;
-  currentPlan[index].meal = meal;
-  currentSeed = Math.floor(Math.random() * 999999);
-  saveMealPlan();
-  renderPlan();
 }
 
 function rerollMeal(index, element) {
@@ -380,10 +229,11 @@ function rerollMeal(index, element) {
     m.type !== next?.type
   );
   if (options.length === 0) options = meals.filter(m => m.days.includes(day));
-
+  
   const newMeal = options[Math.floor(Math.random() * options.length)];
   currentPlan[index].meal = newMeal;
 
+  // new seed for manual change
   currentSeed = Math.floor(Math.random() * 999999);
   saveMealPlan();
 
@@ -394,7 +244,10 @@ function rerollMeal(index, element) {
 
 function saveMealPlan() {
   const mealPlan = {};
-  currentPlan.forEach(entry => mealPlan[entry.day] = entry.meal.name);
+  currentPlan.forEach(entry => {
+    mealPlan[entry.day] = entry.meal.name;
+  });
+
   localStorage.setItem('weeklyMealPlan', JSON.stringify(mealPlan));
   localStorage.setItem('mealSeed', currentSeed);
 }
@@ -428,5 +281,7 @@ window.onload = () => {
   }
 };
 </script>
+
 </body>
 </html>
+
