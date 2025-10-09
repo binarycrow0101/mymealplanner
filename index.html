@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Super Polished Meal Planner</title>
 <style>
   body {
@@ -38,45 +38,95 @@
     background: #005fa3;
   }
 
- .meal {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 8px 0;
-  padding: 14px 16px;
-  border-radius: 10px;
-  background: white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-  position: relative;
-}
+  /* Each meal row is a flex container: left text, right actions */
+  .meal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 8px 0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    position: relative;
+  }
 
-.meal strong {
-  flex-shrink: 0;
-  width: 90px;
-}
+  .meal:hover { background: #f1f7ff; }
+  .meal:active { transform: scale(0.98); }
 
-.menu-btn {
-  background: transparent;
-  border: none;
-  color: #444;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: background 0.2s, transform 0.1s;
-}
+  .meal-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0; /* allow text truncation if needed */
+  }
 
-.menu-btn:hover {
-  background: #eef6ff;
-  color: #0077cc;
-  transform: scale(1.1);
-}
+  .meal-left strong { width: 90px; flex-shrink: 0; } /* day label fixed width */
 
+  .meal-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-  .meal:active {
-    transform: scale(0.98);
+  /* small action area to the right; relative so menu can be absolute to it */
+  .meal-actions {
+    position: relative;
+    flex: 0 0 auto;
+    margin-left: 8px;
+  }
+
+  .menu-btn {
+    background: transparent;
+    color: #555;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 6px;
+    border-radius: 6px;
+    transition: background 0.15s, transform 0.12s, color 0.15s;
+  }
+
+  .menu-btn:hover {
+    background: #eef6ff;
+    color: #0077cc;
+    transform: scale(1.08);
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    z-index: 2000;
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 6px 0;
+    min-width: 220px;
+    animation: fadeIn 0.12s ease forwards;
+    transform-origin: top right;
+    opacity: 0; transform: scale(0.97);
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .dropdown-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .dropdown-item:hover {
+    background: #eef6ff;
   }
 
   .highlight {
@@ -108,62 +158,6 @@
     border: 1px solid #ccc;
     text-align: center;
   }
-
-  /* ✅ Modern “...” menu button styling */
-  .menu-btn {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    background: transparent;
-    color: #555;
-    border: none;
-    font-size: 22px;
-    cursor: pointer;
-    line-height: 1;
-    z-index: 10;
-    transition: transform 0.15s ease, color 0.2s ease;
-  }
-
-  .menu-btn:hover {
-    color: #0077cc;
-    transform: scale(1.2);
-  }
-
-  /* 🔽 Dropdown styling with animation */
-  .dropdown-menu {
-    position: absolute;
-    right: 10px;
-    top: 45px;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    z-index: 1000;
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 4px 0;
-    opacity: 0;
-    transform: scale(0.95);
-    transform-origin: top right;
-    animation: fadeIn 0.15s ease forwards;
-  }
-
-  @keyframes fadeIn {
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  .dropdown-item {
-    padding: 6px 10px;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-
-  .dropdown-item:hover {
-    background: #eef6ff;
-  }
 </style>
 </head>
 <body>
@@ -181,7 +175,7 @@
 <div id="meal-plan"></div>
 
 <script>
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 
 const meals = [
   {name:"General Tso Chicken",days:["Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Asian"},
@@ -284,18 +278,30 @@ function renderPlan() {
 
     const div = document.createElement("div");
     div.className = "meal";
-    div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
-    div.onclick = () => rerollMeal(index, div);
+
+    // left side: day + meal text
+    const left = document.createElement("div");
+    left.className = "meal-left";
+    left.onclick = () => rerollMeal(index, div); // clicking left rerolls only
+    left.innerHTML = `<strong>${entry.day}</strong><div class="meal-title">${entry.meal.name}</div>`;
+
+    // right side: actions
+    const actions = document.createElement("div");
+    actions.className = "meal-actions";
 
     const menuBtn = document.createElement("button");
     menuBtn.className = "menu-btn";
+    menuBtn.setAttribute("aria-label", "Open meal chooser");
     menuBtn.textContent = "⋮";
-    menuBtn.onclick = (e) => {
+    // stop propagation so parent click (reroll) doesn't run
+    menuBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      toggleDropdown(menuBtn, entry.day, index);
-    };
+      toggleDropdown(actions, entry.day, index);
+    });
 
-    div.appendChild(menuBtn);
+    actions.appendChild(menuBtn);
+    div.appendChild(left);
+    div.appendChild(actions);
     planDiv.appendChild(div);
   });
 
@@ -305,36 +311,55 @@ function renderPlan() {
   planDiv.appendChild(healthyLabel);
 }
 
-function toggleDropdown(button, day, index) {
-  const existing = document.querySelector(".dropdown-menu");
-  if (existing) existing.remove();
+function toggleDropdown(actionsContainer, day, index) {
+  // remove any other menu
+  document.querySelectorAll(".dropdown-menu").forEach(el => el.remove());
 
   const menu = document.createElement("div");
   menu.className = "dropdown-menu";
+  // store index on menu so items can read correct row even if things re-render
+  menu.dataset.rowIndex = String(index);
 
   const options = meals.filter(m => m.days.includes(day));
-  options.forEach(meal => {
+  options.forEach((meal) => {
     const item = document.createElement("div");
     item.className = "dropdown-item";
     item.textContent = meal.name;
-    item.onclick = () => chooseMeal(index, meal);
+    // store meal name (or index) on the item
+    item.dataset.mealName = meal.name;
+    item.dataset.rowIndex = String(index);
+    item.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const row = parseInt(item.dataset.rowIndex, 10);
+      const mealName = item.dataset.mealName;
+      // find the meal object by name (names are unique in your data)
+      const chosen = meals.find(m => m.name === mealName);
+      if (typeof row === "number" && chosen) {
+        chooseMeal(row, chosen);
+      }
+      // close menu after choosing
+      menu.remove();
+    });
     menu.appendChild(item);
   });
 
-  button.parentElement.appendChild(menu);
+  actionsContainer.appendChild(menu);
 
-  // close on click outside
+  // click outside to close
   setTimeout(() => {
-    document.addEventListener("click", function handler(e) {
-      if (!menu.contains(e.target)) {
+    function outsideHandler(ev) {
+      if (!menu.contains(ev.target) && !actionsContainer.contains(ev.target)) {
         menu.remove();
-        document.removeEventListener("click", handler);
+        document.removeEventListener("click", outsideHandler);
       }
-    });
+    }
+    document.addEventListener("click", outsideHandler);
   }, 10);
 }
 
 function chooseMeal(index, meal) {
+  // ensure index still valid
+  if (index < 0 || index >= currentPlan.length) return;
   currentPlan[index].meal = meal;
   currentSeed = Math.floor(Math.random() * 999999);
   saveMealPlan();
@@ -369,10 +394,7 @@ function rerollMeal(index, element) {
 
 function saveMealPlan() {
   const mealPlan = {};
-  currentPlan.forEach(entry => {
-    mealPlan[entry.day] = entry.meal.name;
-  });
-
+  currentPlan.forEach(entry => mealPlan[entry.day] = entry.meal.name);
   localStorage.setItem('weeklyMealPlan', JSON.stringify(mealPlan));
   localStorage.setItem('mealSeed', currentSeed);
 }
@@ -408,4 +430,3 @@ window.onload = () => {
 </script>
 </body>
 </html>
-
