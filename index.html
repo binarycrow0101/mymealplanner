@@ -38,42 +38,43 @@
   }
 
   .meal {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    position: relative;
     margin: 8px 0;
-    padding: 14px 16px;
+    padding: 16px;
     border-radius: 10px;
     background: white;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    cursor: pointer;
     transition: background 0.2s, transform 0.1s;
-    position: relative;
+  }
+
+  .meal:active {
+    transform: scale(0.98);
   }
 
   .meal:hover {
     background: #f1f7ff;
   }
 
-  .meal strong {
-    flex-shrink: 0;
-    width: 90px;
-  }
-
   .menu-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
     background: transparent;
     border: none;
     color: #444;
-    font-size: 20px;
+    font-size: 22px;
     cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: background 0.2s, transform 0.1s;
+    padding: 6px;
+    border-radius: 50%;
+    line-height: 1;
+    transition: background 0.2s, color 0.2s;
   }
 
   .menu-btn:hover {
     background: #eef6ff;
     color: #0077cc;
-    transform: scale(1.1);
   }
 
   .dropdown-menu {
@@ -84,7 +85,7 @@
     border-radius: 10px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     margin-top: 6px;
-    z-index: 100;
+    z-index: 200;
     overflow: hidden;
   }
 
@@ -191,7 +192,7 @@ const meals = [
 
 let currentPlan = [];
 let currentSeed = null;
-let dropdownOpen = false; // Track when dropdown is open
+let dropdownOpen = false;
 
 function seededRandom(seed) {
   let x = Math.sin(seed++) * 10000;
@@ -200,9 +201,6 @@ function seededRandom(seed) {
 
 function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
   currentSeed = seed;
-  const planDiv = document.getElementById("meal-plan");
-  planDiv.innerHTML = "";
-
   let plan = [];
   let lastCore = null;
   let lastType = null;
@@ -229,7 +227,6 @@ function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
       lastType = meal.type;
       if (meal.health >= 3) healthyCount++;
     }
-
     if ((healthyCount / DAYS.length) >= 0.7) break;
   }
 
@@ -246,22 +243,21 @@ function renderPlan() {
 
   currentPlan.forEach((entry, index) => {
     if (entry.meal.health >= 3) healthyCount++;
+
     const div = document.createElement("div");
     div.className = "meal";
     div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
 
-    const actions = document.createElement("div");
     const btn = document.createElement("button");
     btn.className = "menu-btn";
     btn.textContent = "⋮";
     btn.onclick = (e) => {
       e.stopPropagation();
-      toggleDropdown(actions, entry.day, index);
+      toggleDropdown(div, entry.day, index);
     };
-    actions.appendChild(btn);
-    div.appendChild(actions);
 
-    // Disable reroll when dropdown is open
+    div.appendChild(btn);
+
     div.addEventListener("click", () => {
       if (!dropdownOpen) rerollMeal(index, div);
     });
@@ -269,20 +265,20 @@ function renderPlan() {
     planDiv.appendChild(div);
   });
 
-  const healthyLabel = document.createElement("div");
-  healthyLabel.className = "healthy-label";
-  healthyLabel.textContent = `Healthy meals this week: ${Math.round((healthyCount / DAYS.length) * 100)}% (Seed #${currentSeed})`;
-  planDiv.appendChild(healthyLabel);
+  const label = document.createElement("div");
+  label.className = "healthy-label";
+  label.textContent = `Healthy meals this week: ${Math.round((healthyCount / DAYS.length) * 100)}% (Seed #${currentSeed})`;
+  planDiv.appendChild(label);
 }
 
-function toggleDropdown(actionsContainer, day, index) {
+function toggleDropdown(parent, day, index) {
   document.querySelectorAll(".dropdown-menu").forEach(el => el.remove());
   dropdownOpen = true;
 
   const menu = document.createElement("div");
   menu.className = "dropdown-menu";
-
   const options = meals.filter(m => m.days.includes(day));
+
   options.forEach(meal => {
     const item = document.createElement("div");
     item.className = "dropdown-item";
@@ -296,19 +292,19 @@ function toggleDropdown(actionsContainer, day, index) {
     menu.appendChild(item);
   });
 
-  actionsContainer.appendChild(menu);
+  parent.appendChild(menu);
 
   setTimeout(() => {
-    function outsideHandler(ev) {
-      if (!menu.contains(ev.target) && !actionsContainer.contains(ev.target)) {
+    function closeOutside(ev) {
+      if (!menu.contains(ev.target)) {
         menu.remove();
         dropdownOpen = false;
-        document.removeEventListener("click", outsideHandler);
-        document.removeEventListener("touchstart", outsideHandler);
+        document.removeEventListener("click", closeOutside);
+        document.removeEventListener("touchstart", closeOutside);
       }
     }
-    document.addEventListener("click", outsideHandler);
-    document.addEventListener("touchstart", outsideHandler);
+    document.addEventListener("click", closeOutside);
+    document.addEventListener("touchstart", closeOutside);
   }, 10);
 }
 
