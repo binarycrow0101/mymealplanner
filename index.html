@@ -40,6 +40,7 @@
   .meal {
     margin: 8px 0;
     padding: 16px;
+    padding-right: 45px; /* prevent text overlap with ⋮ */
     border-radius: 10px;
     background: white;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -86,25 +87,23 @@
     text-align: center;
   }
 
+  /* ✅ FIXED MENU BUTTON */
   .menu-btn {
     position: absolute;
     right: 10px;
     top: 10px;
-    background: #0077cc;
-    color: white;
+    background: transparent;
+    color: #444;
     border: none;
-    font-size: 18px;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    line-height: 26px;
-    text-align: center;
+    font-size: 22px;
     cursor: pointer;
-    transition: background 0.2s;
+    line-height: 1;
+    z-index: 10;
   }
 
   .menu-btn:hover {
-    background: #005fa3;
+    color: #0077cc;
+    transform: scale(1.1);
   }
 
   .dropdown-menu {
@@ -371,6 +370,5 @@ window.onload = () => {
   }
 };
 </script>
-
 </body>
 </html>
