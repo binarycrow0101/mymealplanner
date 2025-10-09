@@ -67,7 +67,7 @@
 let meals = [];
 const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-// Fetch the JSON meal data
+// Load meals from JSON
 fetch("Weeklymealgenerator.json")
   .then(response => response.json())
   .then(data => {
@@ -76,7 +76,7 @@ fetch("Weeklymealgenerator.json")
   })
   .catch(err => console.error("Error loading meal data:", err));
 
-// Load from localStorage or generate new
+// Load from localStorage or generate new week
 function loadOrGeneratePlan() {
   const savedPlan = localStorage.getItem("mealPlan");
   if (savedPlan) {
@@ -86,32 +86,32 @@ function loadOrGeneratePlan() {
   }
 }
 
-// Generate a random week of meals (no duplicates)
+// Generate a new week plan
 function generateWeek() {
   const plan = {};
   const usedMeals = new Set();
 
   daysOfWeek.forEach(day => {
     let possibleMeals = meals.filter(m => {
-      const allowedDays = m["Days can occur on"].toLowerCase();
-      return allowedDays.includes(day.toLowerCase()) && !usedMeals.has(m.Recipies);
+      const allowedDays = m.Days.map(d => d.toLowerCase());
+      return allowedDays.includes(day.toLowerCase()) && !usedMeals.has(m.Recipe);
     });
 
-    // Fallback if no meal matches day restriction
+    // Fallback if no valid meals found for the day
     if (possibleMeals.length === 0) {
-      possibleMeals = meals.filter(m => !usedMeals.has(m.Recipies));
+      possibleMeals = meals.filter(m => !usedMeals.has(m.Recipe));
     }
 
     const chosen = possibleMeals[Math.floor(Math.random() * possibleMeals.length)];
-    usedMeals.add(chosen.Recipies);
-    plan[day] = chosen.Recipies;
+    usedMeals.add(chosen.Recipe);
+    plan[day] = chosen.Recipe;
   });
 
   localStorage.setItem("mealPlan", JSON.stringify(plan));
   renderWeek(plan);
 }
 
-// Render the weekly meal plan
+// Display the plan on the page
 function renderWeek(plan) {
   const container = document.getElementById("mealList");
   container.innerHTML = "";
@@ -120,35 +120,38 @@ function renderWeek(plan) {
     const meal = plan[day] || "—";
     const card = document.createElement("div");
     card.className = "day-card";
-    card.innerHTML = `<h3>${day}</h3><p>${meal}</p>
-                      <button onclick="rerollMeal('${day}')">↻ Spin</button>`;
+    card.innerHTML = `
+      <h3>${day}</h3>
+      <p>${meal}</p>
+      <button onclick="rerollMeal('${day}')">↻ Spin</button>
+    `;
     container.appendChild(card);
   });
 }
 
+// Reroll an individual day's meal
 function rerollMeal(day) {
   const plan = JSON.parse(localStorage.getItem("mealPlan"));
   const usedMeals = new Set(Object.values(plan).filter((m, d) => daysOfWeek[d] !== day));
 
   let possibleMeals = meals.filter(m => {
-    const allowedDays = m["Days can occur on"].toLowerCase();
-    return allowedDays.includes(day.toLowerCase()) && !usedMeals.has(m.Recipies);
+    const allowedDays = m.Days.map(d => d.toLowerCase());
+    return allowedDays.includes(day.toLowerCase()) && !usedMeals.has(m.Recipe);
   });
 
   if (possibleMeals.length === 0) {
-    possibleMeals = meals.filter(m => !usedMeals.has(m.Recipies));
+    possibleMeals = meals.filter(m => !usedMeals.has(m.Recipe));
   }
 
   const chosen = possibleMeals[Math.floor(Math.random() * possibleMeals.length)];
-  plan[day] = chosen.Recipies;
+  plan[day] = chosen.Recipe;
 
   localStorage.setItem("mealPlan", JSON.stringify(plan));
   renderWeek(plan);
 }
 
-document.getElementById("generateWeek").addEventListener("click", () => {
-  generateWeek();
-});
+// Button: Generate new week
+document.getElementById("generateWeek").addEventListener("click", generateWeek);
 </script>
 </body>
 </html>
