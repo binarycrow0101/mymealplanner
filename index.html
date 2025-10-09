@@ -191,6 +191,7 @@ const meals = [
 
 let currentPlan = [];
 let currentSeed = null;
+let dropdownOpen = false; // Track when dropdown is open
 
 function seededRandom(seed) {
   let x = Math.sin(seed++) * 10000;
@@ -247,7 +248,7 @@ function renderPlan() {
     if (entry.meal.health >= 3) healthyCount++;
     const div = document.createElement("div");
     div.className = "meal";
-    div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name>`;
+    div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
 
     const actions = document.createElement("div");
     const btn = document.createElement("button");
@@ -260,7 +261,11 @@ function renderPlan() {
     actions.appendChild(btn);
     div.appendChild(actions);
 
-    div.addEventListener("click", () => rerollMeal(index, div));
+    // Disable reroll when dropdown is open
+    div.addEventListener("click", () => {
+      if (!dropdownOpen) rerollMeal(index, div);
+    });
+
     planDiv.appendChild(div);
   });
 
@@ -272,6 +277,7 @@ function renderPlan() {
 
 function toggleDropdown(actionsContainer, day, index) {
   document.querySelectorAll(".dropdown-menu").forEach(el => el.remove());
+  dropdownOpen = true;
 
   const menu = document.createElement("div");
   menu.className = "dropdown-menu";
@@ -281,22 +287,14 @@ function toggleDropdown(actionsContainer, day, index) {
     const item = document.createElement("div");
     item.className = "dropdown-item";
     item.textContent = meal.name;
-
-    const handler = (e) => {
-      e.preventDefault();
+    item.onclick = (e) => {
       e.stopPropagation();
       chooseMeal(index, meal);
       menu.remove();
+      dropdownOpen = false;
     };
-
-    item.addEventListener("click", handler, { passive: false });
-    item.addEventListener("touchend", handler, { passive: false });
-
     menu.appendChild(item);
   });
-
-  menu.addEventListener("click", e => e.stopPropagation(), { passive: false });
-  menu.addEventListener("touchstart", e => e.stopPropagation(), { passive: false });
 
   actionsContainer.appendChild(menu);
 
@@ -304,6 +302,7 @@ function toggleDropdown(actionsContainer, day, index) {
     function outsideHandler(ev) {
       if (!menu.contains(ev.target) && !actionsContainer.contains(ev.target)) {
         menu.remove();
+        dropdownOpen = false;
         document.removeEventListener("click", outsideHandler);
         document.removeEventListener("touchstart", outsideHandler);
       }
