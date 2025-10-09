@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Super Polished Meal Planner</title>
+<title>Weekly Meal Planner</title>
 <style>
   body {
     font-family: 'Segoe UI', sans-serif;
@@ -38,15 +38,14 @@
   }
 
   .meal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin: 8px 0;
-    padding: 16px 12px;
+    padding: 14px 16px;
     border-radius: 10px;
     background: white;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
     transition: background 0.2s, transform 0.1s;
     position: relative;
   }
@@ -55,47 +54,45 @@
     background: #f1f7ff;
   }
 
-  .meal:active {
-    transform: scale(0.98);
-  }
-
-  .meal-text {
-    flex: 1;
+  .meal strong {
+    flex-shrink: 0;
+    width: 90px;
   }
 
   .menu-btn {
     background: transparent;
-    color: #444;
     border: none;
-    font-size: 22px;
+    color: #444;
+    font-size: 20px;
     cursor: pointer;
-    padding: 6px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s, transform 0.1s;
   }
 
   .menu-btn:hover {
+    background: #eef6ff;
     color: #0077cc;
     transform: scale(1.1);
   }
 
   .dropdown-menu {
     position: absolute;
-    right: 12px;
-    top: 50px;
+    right: 10px;
+    top: 100%;
     background: white;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+    border-radius: 10px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    z-index: 1000;
-    max-height: 200px;
-    overflow-y: auto;
-    padding: 4px 0;
-    width: 80%;
-    max-width: 280px;
+    margin-top: 6px;
+    z-index: 100;
+    overflow: hidden;
   }
 
   .dropdown-item {
-    padding: 8px 10px;
+    padding: 10px 14px;
     cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
   }
 
   .dropdown-item:hover {
@@ -248,25 +245,22 @@ function renderPlan() {
 
   currentPlan.forEach((entry, index) => {
     if (entry.meal.health >= 3) healthyCount++;
-
     const div = document.createElement("div");
     div.className = "meal";
+    div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name>`;
 
-    const text = document.createElement("div");
-    text.className = "meal-text";
-    text.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
-    text.onclick = () => rerollMeal(index, div);
-
-    const menuBtn = document.createElement("button");
-    menuBtn.className = "menu-btn";
-    menuBtn.textContent = "⋮";
-    menuBtn.onclick = (e) => {
+    const actions = document.createElement("div");
+    const btn = document.createElement("button");
+    btn.className = "menu-btn";
+    btn.textContent = "⋮";
+    btn.onclick = (e) => {
       e.stopPropagation();
-      toggleDropdown(div, entry.day, index);
+      toggleDropdown(actions, entry.day, index);
     };
+    actions.appendChild(btn);
+    div.appendChild(actions);
 
-    div.appendChild(text);
-    div.appendChild(menuBtn);
+    div.addEventListener("click", () => rerollMeal(index, div));
     planDiv.appendChild(div);
   });
 
@@ -277,14 +271,13 @@ function renderPlan() {
 }
 
 function toggleDropdown(actionsContainer, day, index) {
-  // remove existing dropdowns
   document.querySelectorAll(".dropdown-menu").forEach(el => el.remove());
 
   const menu = document.createElement("div");
   menu.className = "dropdown-menu";
 
   const options = meals.filter(m => m.days.includes(day));
-  options.forEach((meal) => {
+  options.forEach(meal => {
     const item = document.createElement("div");
     item.className = "dropdown-item";
     item.textContent = meal.name;
@@ -296,16 +289,17 @@ function toggleDropdown(actionsContainer, day, index) {
       menu.remove();
     };
 
-    // Support iOS + desktop
     item.addEventListener("click", handler, { passive: false });
-    item.addEventListener("touchstart", handler, { passive: false });
+    item.addEventListener("touchend", handler, { passive: false });
 
     menu.appendChild(item);
   });
 
+  menu.addEventListener("click", e => e.stopPropagation(), { passive: false });
+  menu.addEventListener("touchstart", e => e.stopPropagation(), { passive: false });
+
   actionsContainer.appendChild(menu);
 
-  // close on click outside
   setTimeout(() => {
     function outsideHandler(ev) {
       if (!menu.contains(ev.target) && !actionsContainer.contains(ev.target)) {
@@ -343,10 +337,8 @@ function rerollMeal(index, element) {
 
   const newMeal = options[Math.floor(Math.random() * options.length)];
   currentPlan[index].meal = newMeal;
-
   currentSeed = Math.floor(Math.random() * 999999);
   saveMealPlan();
-
   element.classList.add("highlight");
   setTimeout(() => element.classList.remove("highlight"), 400);
   renderPlan();
@@ -354,10 +346,7 @@ function rerollMeal(index, element) {
 
 function saveMealPlan() {
   const mealPlan = {};
-  currentPlan.forEach(entry => {
-    mealPlan[entry.day] = entry.meal.name;
-  });
-
+  currentPlan.forEach(entry => mealPlan[entry.day] = entry.meal.name);
   localStorage.setItem('weeklyMealPlan', JSON.stringify(mealPlan));
   localStorage.setItem('mealSeed', currentSeed);
 }
@@ -391,5 +380,6 @@ window.onload = () => {
   }
 };
 </script>
+
 </body>
 </html>
