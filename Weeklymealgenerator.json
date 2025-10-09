@@ -1,0 +1,657 @@
+[
+  {
+    "Recipe": "General Tso Chicken",
+    "Days": [
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 3,
+    "Effort": 3,
+    "Healthiness": 2,
+    "CoreIngredient": "Chicken",
+    "MealType": "Asian",
+    "Ingredients": [
+      "chicken breast",
+      "soy sauce",
+      "garlic",
+      "ginger",
+      "cornstarch",
+      "sugar",
+      "vinegar",
+      "rice",
+      "Hoisin Sauce",
+      "Stem Broccoli"
+    ]
+  },
+  {
+    "Recipe": "Taco's",
+    "Days": [
+      "Tuesdays",
+      "Thursdays"
+    ],
+    "Regularity": 4,
+    "Effort": 1,
+    "Healthiness": 3,
+    "CoreIngredient": "Turkey",
+    "MealType": "Mexican",
+    "Ingredients": [
+      "minced beef/Turkey",
+      "taco shells",
+      "Taco mix",
+      "lettuce",
+      "cheddar cheese",
+      "tomatoes",
+      "sour cream"
+    ]
+  },
+  {
+    "Recipe": "Jambalaya",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday"
+    ],
+    "Regularity": 3,
+    "Effort": 2,
+    "Healthiness": 2,
+    "CoreIngredient": "Chicken",
+    "MealType": "Rice",
+    "Ingredients": [
+      "rice",
+      "chicken thighs",
+      "chorizo",
+      "prawns",
+      "bell peppers",
+      "onion",
+      "celery",
+      "Jambalaya kit"
+    ]
+  },
+  {
+    "Recipe": "Jerk Chicken",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday"
+    ],
+    "Regularity": 3,
+    "Effort": 2,
+    "Healthiness": 3,
+    "CoreIngredient": "Chicken",
+    "MealType": "Rice",
+    "Ingredients": [
+      "chicken thighs",
+      "jerk seasoning",
+      "lime",
+      "rice",
+      "coconut milk",
+      "Kidney beans",
+      "Sweetcorn"
+    ]
+  },
+  {
+    "Recipe": "Pasta and Red Sauce",
+    "Days": [
+      "Wednesday"
+    ],
+    "Regularity": 5,
+    "Effort": 1,
+    "Healthiness": 3,
+    "CoreIngredient": "Veggie",
+    "MealType": "Pasta",
+    "Ingredients": [
+      "rigatoni Pasta",
+      "red pasta sauce",
+      "mozzerella cheese",
+      "capers",
+      "garlic bread"
+    ]
+  },
+  {
+    "Recipe": "Cheddar Broccoli",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday"
+    ],
+    "Regularity": 2,
+    "Effort": 4,
+    "Healthiness": 2,
+    "CoreIngredient": "Veggie",
+    "MealType": "Soup",
+    "Ingredients": [
+      "broccoli",
+      "cheddar",
+      "butter",
+      "onion",
+      "garlic",
+      "flour",
+      "cream"
+    ]
+  },
+  {
+    "Recipe": "Fish Burgers",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday"
+    ],
+    "Regularity": 2,
+    "Effort": 2,
+    "Healthiness": 2,
+    "CoreIngredient": "Veggie",
+    "MealType": "Burger",
+    "Ingredients": [
+      "breaded/battered fish fillets",
+      "chips",
+      "franks hot sauce",
+      "lettuce",
+      "tomatoes",
+      "cheese slices",
+      "green beans"
+    ]
+  },
+  {
+    "Recipe": "Stir Fry",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday"
+    ],
+    "Regularity": 3,
+    "Effort": 2,
+    "Healthiness": 5,
+    "CoreIngredient": "Mixed",
+    "MealType": "Asian",
+    "Ingredients": [
+      "egg noodles",
+      "chicken breast/shrimp",
+      "hoisin sauce",
+      "sugar snap peas",
+      "cashew nuts",
+      "honey",
+      "soy sauce",
+      "garlic",
+      "ginger"
+    ]
+  },
+  {
+    "Recipe": "Rotisserie Chicken",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 4,
+    "Effort": 2,
+    "Healthiness": 3,
+    "CoreIngredient": "Chicken",
+    "MealType": "Roast",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Take Out",
+    "Days": [
+      "Friday",
+      "Saturday"
+    ],
+    "Regularity": 3,
+    "Effort": 1,
+    "Healthiness": 1,
+    "CoreIngredient": "Mixed",
+    "MealType": "Any",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Chicken Souvlaki",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday"
+    ],
+    "Regularity": 4,
+    "Effort": 2,
+    "Healthiness": 4,
+    "CoreIngredient": "Chicken",
+    "MealType": "Greek",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Avacado Toast",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ],
+    "Regularity": 2,
+    "Effort": 3,
+    "Healthiness": 3,
+    "CoreIngredient": "Veggie",
+    "MealType": "Breakfast",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Chicken parm",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ],
+    "Regularity": 2,
+    "Effort": 3,
+    "Healthiness": 2,
+    "CoreIngredient": "Chicken",
+    "MealType": "Pasta",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Roast Chicken",
+    "Days": [
+      "Sunday"
+    ],
+    "Regularity": 3,
+    "Effort": 4,
+    "Healthiness": 3,
+    "CoreIngredient": "Chicken",
+    "MealType": "Roast",
+    "Ingredients": [
+      "whole chicken",
+      "yorkshire pudding",
+      "potatoes",
+      "carrots",
+      "parsnips",
+      "lemon",
+      "rosemary and thyme",
+      "garlic",
+      "gravy"
+    ]
+  },
+  {
+    "Recipe": "Tomato Basil Chicken",
+    "Days": [
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 3,
+    "Effort": 3,
+    "Healthiness": 3,
+    "CoreIngredient": "Chicken",
+    "MealType": "Roast",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Minestrone soup",
+    "Days": [
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 2,
+    "Effort": 5,
+    "Healthiness": 5,
+    "CoreIngredient": "Veggie",
+    "MealType": "Soup",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Artichoke risotto",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 1,
+    "Effort": 4,
+    "Healthiness": 1,
+    "CoreIngredient": "Veggie",
+    "MealType": "Risotto",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Pizza",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 3,
+    "Effort": 1,
+    "Healthiness": 2,
+    "CoreIngredient": "Veggie",
+    "MealType": "Pizza",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Salad",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ],
+    "Regularity": 3,
+    "Effort": 4,
+    "Healthiness": 5,
+    "CoreIngredient": "Veggie",
+    "MealType": "Salad",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Fajitas",
+    "Days": [
+      "Tuesdays",
+      "Thursdays"
+    ],
+    "Regularity": 3,
+    "Effort": 2,
+    "Healthiness": 3,
+    "CoreIngredient": "Chicken",
+    "MealType": "Mexican",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Spaghetti Meatballs",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 3,
+    "Effort": 2,
+    "Healthiness": 2,
+    "CoreIngredient": "Beef",
+    "MealType": "Pasta",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Cheese and Biscuits",
+    "Days": [
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 2,
+    "Effort": 4,
+    "Healthiness": 1,
+    "CoreIngredient": "Mixed",
+    "MealType": "Snacky",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Buffalo Wing Dip",
+    "Days": [
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 2,
+    "Effort": 3,
+    "Healthiness": 1,
+    "CoreIngredient": "Chicken",
+    "MealType": "Snacky",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "BBQ pasta",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 1,
+    "Effort": 3,
+    "Healthiness": 1,
+    "CoreIngredient": "Beef",
+    "MealType": "Pasta",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Salmon",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 3,
+    "Effort": 2,
+    "Healthiness": 4,
+    "CoreIngredient": "Fish",
+    "MealType": "Asian",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Garlic Noodles",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 3,
+    "Effort": 2,
+    "Healthiness": 3,
+    "CoreIngredient": "Mixed",
+    "MealType": "Noodles",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "M&S Dine In",
+    "Days": [
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 3,
+    "Effort": 1,
+    "Healthiness": 4,
+    "CoreIngredient": "Mixed",
+    "MealType": "Any",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Beef Burgers",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 3,
+    "Effort": 2,
+    "Healthiness": 1,
+    "CoreIngredient": "Beef",
+    "MealType": "Burger",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Chicken Burgers",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 3,
+    "Effort": 2,
+    "Healthiness": 3,
+    "CoreIngredient": "Chicken",
+    "MealType": "Burger",
+    "Ingredients": [
+      "breaded/battered chicken",
+      "chips",
+      "lettuce",
+      "tomatoes",
+      "cheese slices",
+      "green beans"
+    ]
+  },
+  {
+    "Recipe": "Turkey Burgers",
+    "Days": [
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 2,
+    "Effort": 3,
+    "Healthiness": 3,
+    "CoreIngredient": "Turkey",
+    "MealType": "Burger",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Pasta Bake",
+    "Days": [
+      "Wednesday"
+    ],
+    "Regularity": 2,
+    "Effort": 1,
+    "Healthiness": 4,
+    "CoreIngredient": "Veggie",
+    "MealType": "Pasta",
+    "Ingredients": [
+      "penne pasta",
+      "pasta bake sauce",
+      "mozzerella",
+      "garlic bread"
+    ]
+  },
+  {
+    "Recipe": "Enchilades",
+    "Days": [
+      "Tuesdays",
+      "Thursdays"
+    ],
+    "Regularity": 2,
+    "Effort": 3,
+    "Healthiness": 3,
+    "CoreIngredient": "Mixed",
+    "MealType": "Mexican",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Burrito Bowls",
+    "Days": [
+      "Tuesdays",
+      "Thursdays"
+    ],
+    "Regularity": 2,
+    "Effort": 4,
+    "Healthiness": 3,
+    "CoreIngredient": "Mixed",
+    "MealType": "Mexican",
+    "Ingredients": [
+      "Chicken breast",
+      "red onion",
+      "tin of black beans",
+      "rice",
+      "Avocado",
+      "lime",
+      "burrito bowl spice pack",
+      "sweetcorn"
+    ]
+  },
+  {
+    "Recipe": "Bangers and Mash",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 1,
+    "Effort": 2,
+    "Healthiness": 2,
+    "CoreIngredient": "Mixed",
+    "MealType": "Heavy",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Tuna Casserole",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 2,
+    "Effort": 3,
+    "Healthiness": 3,
+    "CoreIngredient": "Fish",
+    "MealType": "Pasta",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Chicken Mackahani",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 1,
+    "Effort": 2,
+    "Healthiness": 4,
+    "CoreIngredient": "Chicken",
+    "MealType": "Indian",
+    "Ingredients": []
+  },
+  {
+    "Recipe": "Chicken Korma",
+    "Days": [
+      "Monday",
+      "Tuesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "Regularity": 1,
+    "Effort": 2,
+    "Healthiness": 4,
+    "CoreIngredient": "Chicken",
+    "MealType": "Indian",
+    "Ingredients": []
+  }
+]
