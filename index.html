@@ -1,157 +1,286 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Weekly Meal Generator</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Polished Meal Planner</title>
 <style>
-  :root {
-    --bg:#0f1724;
-    --card:#0b1220;
-    --accent:#8b5cf6;
-    --text:#f8fafc;
-  }
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: system-ui, sans-serif;
-    margin: 0;
-    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+    background: #fafafa;
+    color: #333;
   }
-  .container {
-    max-width: 500px;
-    margin: 40px auto;
-    text-align: center;
-    padding: 10px;
-  }
+
   h1 {
-    color: var(--accent);
+    text-align: center;
+    margin-bottom: 10px;
   }
-  .day-card {
-    background: var(--card);
-    border-radius: 1rem;
-    padding: 10px;
-    margin: 10px 0;
-  }
+
   button {
-    background: var(--accent);
+    display: block;
+    width: 100%;
+    padding: 18px;
+    margin: 15px 0;
+    background: #0077cc;
     color: white;
     border: none;
     border-radius: 10px;
-    padding: 8px 16px;
-    margin: 5px;
+    font-size: 18px;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  button:hover {
+    background: #005fa3;
+  }
+
+  .meal {
+    margin: 8px 0;
+    padding: 16px;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
   }
-  .buttons {
-    margin-top: 20px;
+
+  .meal:active {
+    transform: scale(0.98);
   }
-  .shopping-link {
-    display: inline-block;
-    margin-top: 20px;
-    text-decoration: none;
-    color: var(--accent);
+
+  .meal:hover {
+    background: #f1f7ff;
+  }
+
+  .highlight {
+    animation: flash 0.4s ease;
+  }
+
+  @keyframes flash {
+    from { background-color: #c8e6c9; }
+    to { background-color: white; }
+  }
+
+  .healthy-label {
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+    color: #2e7d32;
+  }
+
+  .seed-box {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .seed-input {
+    width: 120px;
+    padding: 6px;
+    margin-right: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    text-align: center;
   }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>Weekly Meal Generator</h1>
-  <div id="mealList"></div>
-  <div class="buttons">
-    <button id="generateWeek">Generate New Week</button>
-  </div>
-  <a href="shopping.html" class="shopping-link">View Weekly Shopping List</a>
+
+<h1>Weekly Meal Planner</h1>
+
+<div class="seed-box">
+  <input type="number" id="seedInput" class="seed-input" placeholder="Enter seed">
+  <button onclick="loadFromSeed()">Load Seed</button>
 </div>
 
+<button onclick="generateMealPlan()">Generate New Meal Plan</button>
+<button onclick="openShoppingList()">View Shopping List</button>
+
+<div id="meal-plan"></div>
+
 <script>
-let meals = [];
-const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-// Load meals from JSON
-fetch("Weeklymealgenerator.json")
-  .then(response => response.json())
-  .then(data => {
-    meals = data;
-    loadOrGeneratePlan();
-  })
-  .catch(err => console.error("Error loading meal data:", err));
+const meals = [
+  {name:"General Tso Chicken",days:["Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Asian"},
+  {name:"Taco's",days:["Tuesday","Thursday"],health:3,core:"Turkey",type:"Mexican"},
+  {name:"Jambalaya",days:["Monday","Tuesday","Thursday","Friday"],health:3,core:"Chicken",type:"Rice"},
+  {name:"Jerk Chicken",days:["Monday","Tuesday","Thursday","Friday"],health:4,core:"Chicken",type:"Rice"},
+  {name:"Pasta and Red Sauce",days:["Wednesday"],health:3,core:"Veggie",type:"Pasta"},
+  {name:"Cheddar Broccoli",days:["Monday","Tuesday","Thursday","Friday"],health:3,core:"Veggie",type:"Soup"},
+  {name:"Fish Burgers",days:["Monday","Tuesday","Thursday","Friday"],health:3,core:"Veggie",type:"Burger"},
+  {name:"Stir Fry",days:["Monday","Tuesday","Thursday","Friday"],health:5,core:"Mixed",type:"Asian"},
+  {name:"Rotisserie Chicken",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Chicken",type:"Roast"},
+  {name:"Take Out",days:["Friday","Saturday"],health:1,core:"Mixed",type:"Any"},
+  {name:"Chicken Souvlaki",days:["Monday","Tuesday","Thursday","Friday"],health:4,core:"Chicken",type:"Greek"},
+  {name:"Avacado Toast",days:["Monday","Tuesday","Thursday","Friday","Saturday"],health:4,core:"Veggie",type:"Breakfast"},
+  {name:"Chicken parm",days:["Monday","Tuesday","Thursday","Friday","Saturday"],health:2,core:"Chicken",type:"Pasta"},
+  {name:"Roast Chicken",days:["Sunday"],health:4,core:"Chicken",type:"Roast"},
+  {name:"Tomato Basil Chicken",days:["Saturday","Sunday"],health:4,core:"Chicken",type:"Roast"},
+  {name:"Minestrone soup",days:["Saturday","Sunday"],health:5,core:"Veggie",type:"Soup"},
+  {name:"Artichoke risotto",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Veggie",type:"Risotto"},
+  {name:"Pizza",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Veggie",type:"Pizza"},
+  {name:"Salad",days:["Monday","Tuesday","Thursday","Friday","Saturday"],health:5,core:"Veggie",type:"Salad"},
+  {name:"Fajitas",days:["Tuesday","Thursday"],health:4,core:"Chicken",type:"Mexican"},
+  {name:"Spaghetti Meatballs",days:["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Beef",type:"Pasta"},
+  {name:"Cheese and Biscuits",days:["Friday","Saturday","Sunday"],health:1,core:"Mixed",type:"Snacky"},
+  {name:"Buffalo Wing Dip",days:["Saturday","Sunday"],health:1,core:"Chicken",type:"Snacky"},
+  {name:"BBQ pasta",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Beef",type:"Pasta"},
+  {name:"Salmon",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:5,core:"Fish",type:"Asian"},
+  {name:"Garlic Noodles",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Mixed",type:"Noodles"},
+  {name:"M&S Dine In",days:["Friday","Saturday","Sunday"],health:2,core:"Mixed",type:"Any"},
+  {name:"Beef Burgers",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Beef",type:"Burger"},
+  {name:"Chicken Burgers",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Chicken",type:"Burger"},
+  {name:"Turkey Burgers",days:["Friday","Saturday","Sunday"],health:4,core:"Turkey",type:"Burger"},
+  {name:"Pasta Bake",days:["Wednesday"],health:2,core:"Veggie",type:"Pasta"},
+  {name:"Enchilades",days:["Tuesday","Thursday"],health:3,core:"Mixed",type:"Mexican"},
+  {name:"Burrito Bowls",days:["Tuesday","Thursday"],health:4,core:"Mixed",type:"Mexican"},
+  {name:"Bangers and Mash",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Mixed",type:"Heavy"},
+  {name:"Tuna Casserole",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Fish",type:"Pasta"},
+  {name:"Chicken Mackahani",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Indian"},
+  {name:"Chicken Korma",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Indian"},
+  {name:"Sticky Mushrooms",days:["Friday","Saturday","Sunday"],health:3,core:"Veggie",type:"Asian"},
+  {name:"Halloumi Tacos",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:4,core:"Veggie",type:"Mexican"},
+];
 
-// Load from localStorage or generate new week
-function loadOrGeneratePlan() {
-  const savedPlan = localStorage.getItem("mealPlan");
-  if (savedPlan) {
-    renderWeek(JSON.parse(savedPlan));
-  } else {
-    generateWeek();
-  }
+let currentPlan = [];
+let currentSeed = null;
+
+function seededRandom(seed) {
+  let x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
 }
 
-// Generate a new week plan
-function generateWeek() {
-  const plan = {};
-  const usedMeals = new Set();
+function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
+  currentSeed = seed;
+  const planDiv = document.getElementById("meal-plan");
+  planDiv.innerHTML = "";
 
-  daysOfWeek.forEach(day => {
-    let possibleMeals = meals.filter(m => {
-      const allowedDays = m.Days.map(d => d.toLowerCase());
-      return allowedDays.includes(day.toLowerCase()) && !usedMeals.has(m.Recipe);
-    });
+  let plan = [];
+  let lastCore = null;
+  let lastType = null;
+  let healthyCount = 0;
+  let localSeed = seed;
 
-    // Fallback if no valid meals found for the day
-    if (possibleMeals.length === 0) {
-      possibleMeals = meals.filter(m => !usedMeals.has(m.Recipe));
+  while (true) {
+    plan = [];
+    lastCore = null;
+    lastType = null;
+    healthyCount = 0;
+
+    for (let day of DAYS) {
+      let options = meals.filter(m =>
+        m.days.includes(day) &&
+        m.core !== lastCore &&
+        m.type !== lastType
+      );
+      if (options.length === 0) options = meals.filter(m => m.days.includes(day));
+      const randIndex = Math.floor(seededRandom(localSeed++) * options.length);
+      let meal = options[randIndex];
+      plan.push({ day, meal });
+      lastCore = meal.core;
+      lastType = meal.type;
+      if (meal.health >= 3) healthyCount++;
     }
 
-    const chosen = possibleMeals[Math.floor(Math.random() * possibleMeals.length)];
-    usedMeals.add(chosen.Recipe);
-    plan[day] = chosen.Recipe;
-  });
-
-  localStorage.setItem("mealPlan", JSON.stringify(plan));
-  renderWeek(plan);
-}
-
-// Display the plan on the page
-function renderWeek(plan) {
-  const container = document.getElementById("mealList");
-  container.innerHTML = "";
-
-  daysOfWeek.forEach(day => {
-    const meal = plan[day] || "—";
-    const card = document.createElement("div");
-    card.className = "day-card";
-    card.innerHTML = `
-      <h3>${day}</h3>
-      <p>${meal}</p>
-      <button onclick="rerollMeal('${day}')">↻ Spin</button>
-    `;
-    container.appendChild(card);
-  });
-}
-
-// Reroll an individual day's meal
-function rerollMeal(day) {
-  const plan = JSON.parse(localStorage.getItem("mealPlan"));
-  const usedMeals = new Set(Object.values(plan).filter((m, d) => daysOfWeek[d] !== day));
-
-  let possibleMeals = meals.filter(m => {
-    const allowedDays = m.Days.map(d => d.toLowerCase());
-    return allowedDays.includes(day.toLowerCase()) && !usedMeals.has(m.Recipe);
-  });
-
-  if (possibleMeals.length === 0) {
-    possibleMeals = meals.filter(m => !usedMeals.has(m.Recipe));
+    if ((healthyCount / DAYS.length) >= 0.7) break;
   }
 
-  const chosen = possibleMeals[Math.floor(Math.random() * possibleMeals.length)];
-  plan[day] = chosen.Recipe;
-
-  localStorage.setItem("mealPlan", JSON.stringify(plan));
-  renderWeek(plan);
+  currentPlan = plan;
+  // Every new generation creates a new seed
+  currentSeed = Math.floor(Math.random() * 999999);
+  saveMealPlan();
+  renderPlan();
 }
 
-// Button: Generate new week
-document.getElementById("generateWeek").addEventListener("click", generateWeek);
+function renderPlan() {
+  const planDiv = document.getElementById("meal-plan");
+  planDiv.innerHTML = "";
+  let healthyCount = 0;
+
+  currentPlan.forEach((entry, index) => {
+    if (entry.meal.health >= 3) healthyCount++;
+    const div = document.createElement("div");
+    div.className = "meal";
+    div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
+    div.onclick = () => rerollMeal(index, div);
+    planDiv.appendChild(div);
+  });
+
+  const healthyLabel = document.createElement("div");
+  healthyLabel.className = "healthy-label";
+  healthyLabel.textContent = `Healthy meals this week: ${Math.round((healthyCount / DAYS.length) * 100)}% (Seed #${currentSeed})`;
+  planDiv.appendChild(healthyLabel);
+}
+
+function rerollMeal(index, element) {
+  const day = currentPlan[index].day;
+  const prev = currentPlan[index - 1]?.meal;
+  const next = currentPlan[index + 1]?.meal;
+
+  let options = meals.filter(m =>
+    m.days.includes(day) &&
+    m.name !== currentPlan[index].meal.name &&
+    m.core !== prev?.core &&
+    m.type !== prev?.type &&
+    m.core !== next?.core &&
+    m.type !== next?.type
+  );
+  if (options.length === 0) options = meals.filter(m => m.days.includes(day));
+  
+  const newMeal = options[Math.floor(Math.random() * options.length)];
+  currentPlan[index].meal = newMeal;
+
+  // new seed for manual change
+  currentSeed = Math.floor(Math.random() * 999999);
+  saveMealPlan();
+
+  element.classList.add("highlight");
+  setTimeout(() => element.classList.remove("highlight"), 400);
+  renderPlan();
+}
+
+function saveMealPlan() {
+  const mealPlan = {};
+  currentPlan.forEach(entry => {
+    mealPlan[entry.day] = entry.meal.name;
+  });
+
+  localStorage.setItem('weeklyMealPlan', JSON.stringify(mealPlan));
+  localStorage.setItem('mealSeed', currentSeed);
+}
+
+function openShoppingList() {
+  if (currentPlan.length === 0) {
+    alert("Please generate your meal plan first!");
+    return;
+  }
+  saveMealPlan();
+  window.location.href = 'shopping.html';
+}
+
+function loadFromSeed() {
+  const input = document.getElementById("seedInput").value;
+  if (!input) return alert("Enter a seed number first!");
+  generateMealPlan(parseInt(input));
+}
+
+window.onload = () => {
+  const savedPlan = localStorage.getItem('weeklyMealPlan');
+  const savedSeed = localStorage.getItem('mealSeed');
+  if (savedPlan && savedSeed) {
+    const parsed = JSON.parse(savedPlan);
+    currentSeed = parseInt(savedSeed);
+    currentPlan = Object.entries(parsed).map(([day, mealName]) => {
+      const foundMeal = meals.find(m => m.name === mealName);
+      return { day, meal: foundMeal || { name: mealName, health: 0, core: "", type: "" } };
+    });
+    renderPlan();
+  }
+};
 </script>
+
 </body>
 </html>
