@@ -45,6 +45,7 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     cursor: pointer;
     transition: background 0.2s, transform 0.1s;
+    position: relative;
   }
 
   .meal:active {
@@ -83,6 +84,40 @@
     border-radius: 6px;
     border: 1px solid #ccc;
     text-align: center;
+  }
+
+  .menu-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #666;
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    right: 10px;
+    top: 40px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 4px 0;
+  }
+
+  .dropdown-item {
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+
+  .dropdown-item:hover {
+    background: #eef6ff;
   }
 </style>
 </head>
@@ -189,7 +224,6 @@ function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
   }
 
   currentPlan = plan;
-  // Every new generation creates a new seed
   currentSeed = Math.floor(Math.random() * 999999);
   saveMealPlan();
   renderPlan();
@@ -204,8 +238,18 @@ function renderPlan() {
     if (entry.meal.health >= 3) healthyCount++;
     const div = document.createElement("div");
     div.className = "meal";
-    div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
+    div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name>}`;
     div.onclick = () => rerollMeal(index, div);
+
+    const menuBtn = document.createElement("button");
+    menuBtn.className = "menu-btn";
+    menuBtn.textContent = "⋮";
+    menuBtn.onclick = (e) => {
+      e.stopPropagation();
+      toggleDropdown(e.target, entry.day, index);
+    };
+
+    div.appendChild(menuBtn);
     planDiv.appendChild(div);
   });
 
@@ -213,6 +257,41 @@ function renderPlan() {
   healthyLabel.className = "healthy-label";
   healthyLabel.textContent = `Healthy meals this week: ${Math.round((healthyCount / DAYS.length) * 100)}% (Seed #${currentSeed})`;
   planDiv.appendChild(healthyLabel);
+}
+
+function toggleDropdown(button, day, index) {
+  const existing = document.querySelector(".dropdown-menu");
+  if (existing) existing.remove();
+
+  const menu = document.createElement("div");
+  menu.className = "dropdown-menu";
+
+  const options = meals.filter(m => m.days.includes(day));
+  options.forEach(meal => {
+    const item = document.createElement("div");
+    item.className = "dropdown-item";
+    item.textContent = meal.name;
+    item.onclick = () => chooseMeal(index, meal);
+    menu.appendChild(item);
+  });
+
+  button.parentElement.appendChild(menu);
+
+  setTimeout(() => {
+    document.addEventListener("click", function handler(e) {
+      if (!menu.contains(e.target)) {
+        menu.remove();
+        document.removeEventListener("click", handler);
+      }
+    });
+  }, 10);
+}
+
+function chooseMeal(index, meal) {
+  currentPlan[index].meal = meal;
+  currentSeed = Math.floor(Math.random() * 999999);
+  saveMealPlan();
+  renderPlan();
 }
 
 function rerollMeal(index, element) {
@@ -229,11 +308,10 @@ function rerollMeal(index, element) {
     m.type !== next?.type
   );
   if (options.length === 0) options = meals.filter(m => m.days.includes(day));
-  
+
   const newMeal = options[Math.floor(Math.random() * options.length)];
   currentPlan[index].meal = newMeal;
 
-  // new seed for manual change
   currentSeed = Math.floor(Math.random() * 999999);
   saveMealPlan();
 
