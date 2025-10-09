@@ -38,21 +38,42 @@
     background: #005fa3;
   }
 
-  .meal {
-    margin: 8px 0;
-    padding: 16px;
-    padding-right: 45px; /* prevent overlap with ⋮ */
-    border-radius: 10px;
-    background: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-    position: relative;
-  }
+ .meal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  position: relative;
+}
 
-  .meal:hover {
-    background: #f1f7ff;
-  }
+.meal strong {
+  flex-shrink: 0;
+  width: 90px;
+}
+
+.menu-btn {
+  background: transparent;
+  border: none;
+  color: #444;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.menu-btn:hover {
+  background: #eef6ff;
+  color: #0077cc;
+  transform: scale(1.1);
+}
+
 
   .meal:active {
     transform: scale(0.98);
@@ -387,3 +408,4 @@ window.onload = () => {
 </script>
 </body>
 </html>
+
