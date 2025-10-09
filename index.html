@@ -19,7 +19,8 @@
     margin-bottom: 10px;
   }
 
-  button {
+  /* Only apply large blue style to main buttons */
+  button:not(.menu-btn) {
     display: block;
     width: 100%;
     padding: 18px;
@@ -33,14 +34,14 @@
     transition: background 0.2s;
   }
 
-  button:hover {
+  button:not(.menu-btn):hover {
     background: #005fa3;
   }
 
   .meal {
     margin: 8px 0;
     padding: 16px;
-    padding-right: 45px; /* prevent text overlap with ⋮ */
+    padding-right: 45px; /* prevent overlap with ⋮ */
     border-radius: 10px;
     background: white;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -49,12 +50,12 @@
     position: relative;
   }
 
-  .meal:active {
-    transform: scale(0.98);
-  }
-
   .meal:hover {
     background: #f1f7ff;
+  }
+
+  .meal:active {
+    transform: scale(0.98);
   }
 
   .highlight {
@@ -87,25 +88,27 @@
     text-align: center;
   }
 
-  /* ✅ FIXED MENU BUTTON */
+  /* ✅ Modern “...” menu button styling */
   .menu-btn {
     position: absolute;
     right: 10px;
     top: 10px;
     background: transparent;
-    color: #444;
+    color: #555;
     border: none;
     font-size: 22px;
     cursor: pointer;
     line-height: 1;
     z-index: 10;
+    transition: transform 0.15s ease, color 0.2s ease;
   }
 
   .menu-btn:hover {
     color: #0077cc;
-    transform: scale(1.1);
+    transform: scale(1.2);
   }
 
+  /* 🔽 Dropdown styling with animation */
   .dropdown-menu {
     position: absolute;
     right: 10px;
@@ -118,11 +121,23 @@
     max-height: 200px;
     overflow-y: auto;
     padding: 4px 0;
+    opacity: 0;
+    transform: scale(0.95);
+    transform-origin: top right;
+    animation: fadeIn 0.15s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   .dropdown-item {
     padding: 6px 10px;
     cursor: pointer;
+    transition: background 0.15s;
   }
 
   .dropdown-item:hover {
