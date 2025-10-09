@@ -27,8 +27,8 @@
   {
     "Recipe": "Taco's",
     "Days": [
-      "Tuesdays",
-      "Thursdays"
+      "Tuesday",
+      "Thursday"
     ],
     "Regularity": 4,
     "Effort": 1,
@@ -359,8 +359,8 @@
   {
     "Recipe": "Fajitas",
     "Days": [
-      "Tuesdays",
-      "Thursdays"
+      "Tuesday",
+      "Thursday"
     ],
     "Regularity": 3,
     "Effort": 2,
@@ -554,8 +554,8 @@
   {
     "Recipe": "Enchilades",
     "Days": [
-      "Tuesdays",
-      "Thursdays"
+      "Tuesday",
+      "Thursday"
     ],
     "Regularity": 2,
     "Effort": 3,
@@ -567,8 +567,8 @@
   {
     "Recipe": "Burrito Bowls",
     "Days": [
-      "Tuesdays",
-      "Thursdays"
+      "Tuesday",
+      "Thursday"
     ],
     "Regularity": 2,
     "Effort": 4,
