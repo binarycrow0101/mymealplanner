@@ -82,28 +82,25 @@
 <button onclick="goBack()">Return to Main Page</button>
 
 <script>
-// Example ingredients JSON (edit/add freely)
-const ingredientsData = {
-  "General Tso Chicken": ["Chicken breast", "Soy sauce", "Garlic", "Ginger", "Rice", "Cornflour", "Stem broccoli"],
-  "Taco's": ["Minced beef/turkey","Taco shells","Taco mix", "Lettuce", "Cheddar cheese","Tomatoes","Sour cream"],
-  "Pasta and Red Sauce": ["Rigatoni pasta", "Tomato sauce", "Mozzarella Cheese", "Garlic bread"],
-  "Chicken Souvlaki": ["Chicken breast", "Lemon", "Garlic", "Tzatziki sauce", "Pita bread", "Olive olive", "Oregano", "Bell peppers", "Chips", "Tomatoes","Lettuce"],
-  "Salad": ["Breaded chicken fillets", "Lettuce", "Cucumber", "Tomato", "Feta cheese", "Pomegranete", "eggs", "Ranch"],
-  "Pizza": ["Pizzas"],
-  "Rotisserie Chicken": ["Whole chicken", "Green beans", "Potatoes/Chips", "Gravy"],
-  "Fish Burgers": ["Fish fillets", "Burger buns", "Franks hot sauce", "Cheese slices", "Lettuce", "Tomatoes", "Chips", "Asparagus"],
-  "Bangers and Mash": ["Sausages", "Potatoes", "Butter", "Onion Gravy mix"],
-  "Spaghetti Meatballs": ["Spaghetti", "Meatballs", "Capers", "Red sauce", "Mozzarella"],
-  "Stir Fry": ["egg noodles", "chicken breast/shrimp","hoisin sauce","sugar snap peas","cashew nuts","honey","soy sauce","garlic","ginger"],
-  "Jambalaya": ["rice","chicken thighs","chorizo","prawns","bell peppers","onion","celery","Jambalaya kit"],
-  "Jerk Chicken": ["chicken thighs","jerk seasoning","lime","rice","coconut milk","Kidney beans","Sweetcorn"],
-  "Cheddar Broccoli": ["broccoli","cheddar","butter","onion","garlic","flour","cream"],
-};
+let meals = [];
+
+// Load meals from the same JSON file used by the generator
+fetch("Weeklymealgenerator.json")
+  .then(res => res.json())
+  .then(data => {
+    meals = data;
+    loadShoppingList();
+  })
+  .catch(err => {
+    console.error("Error loading meal data:", err);
+    loadShoppingList(); // still show summary if JSON fails
+  });
 
 function loadShoppingList() {
-  const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan'));
+  const mealPlan = JSON.parse(localStorage.getItem('mealPlan'));
   if (!mealPlan) {
-    document.getElementById('summary').innerText = "No meal plan found. Please go back and generate one!";
+    document.getElementById('summary').innerText =
+      "No meal plan found. Please go back and generate one!";
     return;
   }
 
@@ -117,13 +114,16 @@ function loadShoppingList() {
   // Generate shopping list
   const listDiv = document.getElementById('shopping-list');
   listDiv.innerHTML = "";
+
   for (const [day, meal] of Object.entries(mealPlan)) {
     const header = document.createElement("div");
     header.className = "meal-header";
     header.textContent = `${day}: ${meal}`;
     listDiv.appendChild(header);
 
-    const items = ingredientsData[meal] || ["Ingredients not listed yet"];
+    const recipe = meals.find(m => m.Recipe === meal);
+    const items = recipe?.Ingredients?.length ? recipe.Ingredients : ["Ingredients not listed yet"];
+
     items.forEach(ingredient => {
       const itemDiv = document.createElement("div");
       itemDiv.className = "shopping-item";
@@ -134,17 +134,14 @@ function loadShoppingList() {
   }
 }
 
-function goBack() {
-  window.location.href = "index.html";
-}
-
 function exportList() {
-  const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan')) || {};
+  const mealPlan = JSON.parse(localStorage.getItem('mealPlan')) || {};
   let exportText = "WEEKLY MEAL PLAN:\n";
   for (const [day, meal] of Object.entries(mealPlan)) {
     exportText += `${day}: ${meal}\n`;
-    const items = ingredientsData[meal] || ["Ingredients not listed yet"];
-    items.forEach(i => exportText += `  - ${i}\n`);
+    const recipe = meals.find(m => m.Recipe === meal);
+    const items = recipe?.Ingredients?.length ? recipe.Ingredients : ["Ingredients not listed yet"];
+    items.forEach(i => (exportText += `  - ${i}\n`));
   }
 
   const blob = new Blob([exportText], { type: "text/plain" });
@@ -155,11 +152,10 @@ function exportList() {
   a.click();
 }
 
-loadShoppingList();
+function goBack() {
+  window.location.href = "index.html";
+}
 </script>
 
 </body>
 </html>
-
-
-
