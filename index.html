@@ -90,17 +90,27 @@
     position: absolute;
     right: 10px;
     top: 10px;
-    background: transparent;
+    background: #0077cc;
+    color: white;
     border: none;
     font-size: 18px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    line-height: 26px;
+    text-align: center;
     cursor: pointer;
-    color: #666;
+    transition: background 0.2s;
+  }
+
+  .menu-btn:hover {
+    background: #005fa3;
   }
 
   .dropdown-menu {
     position: absolute;
     right: 10px;
-    top: 40px;
+    top: 45px;
     background: white;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -236,9 +246,10 @@ function renderPlan() {
 
   currentPlan.forEach((entry, index) => {
     if (entry.meal.health >= 3) healthyCount++;
+
     const div = document.createElement("div");
     div.className = "meal";
-    div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name>}`;
+    div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
     div.onclick = () => rerollMeal(index, div);
 
     const menuBtn = document.createElement("button");
@@ -246,7 +257,7 @@ function renderPlan() {
     menuBtn.textContent = "⋮";
     menuBtn.onclick = (e) => {
       e.stopPropagation();
-      toggleDropdown(e.target, entry.day, index);
+      toggleDropdown(menuBtn, entry.day, index);
     };
 
     div.appendChild(menuBtn);
@@ -277,6 +288,7 @@ function toggleDropdown(button, day, index) {
 
   button.parentElement.appendChild(menu);
 
+  // close on click outside
   setTimeout(() => {
     document.addEventListener("click", function handler(e) {
       if (!menu.contains(e.target)) {
