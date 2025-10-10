@@ -161,50 +161,30 @@ const plans=getSavedPlans();plans[String(seed)]=p;savePlans(plans);}
 
 function seededRandom(seed){let x=Math.sin(seed++)*10000;return x-Math.floor(x);}
 
-// ✅ Fixed & safe meal generation function
+// ✅ FIXED: Reliable generator (no freezing, still varied)
 function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
   seed = Number(seed);
   currentSeed = seed;
-
   let plan = [];
   let usedMeals = new Set();
   let lastCore = null;
   let lastType = null;
-  let healthyCount = 0;
   let localSeed = seed;
-  let attempts = 0;
 
-  while (attempts < 1000) { // prevent infinite loop
-    plan = [];
-    usedMeals.clear();
-    lastCore = null;
-    lastType = null;
-    healthyCount = 0;
-    localSeed = seed;
+  for (let day of DAYS) {
+    let opts = meals.filter(m => m.days.includes(day) && !usedMeals.has(m.name));
 
-    for (let day of DAYS) {
-      let opts = meals.filter(
-        m => m.days.includes(day) && !usedMeals.has(m.name) && m.core !== lastCore && m.type !== lastType
-      );
-
-      if (!opts.length)
-        opts = meals.filter(m => m.days.includes(day) && !usedMeals.has(m.name));
-      if (!opts.length)
-        opts = meals.filter(m => m.days.includes(day));
-      if (!opts.length) continue;
-
-      const meal = opts[Math.floor(seededRandom(localSeed++) * opts.length)];
-      if (!meal) continue;
-
-      plan.push({ day, meal });
-      usedMeals.add(meal.name);
-      lastCore = meal.core;
-      lastType = meal.type;
-      if (meal.health >= 3) healthyCount++;
+    if (opts.length > 2) {
+      const filtered = opts.filter(m => m.core !== lastCore && m.type !== lastType);
+      if (filtered.length) opts = filtered;
     }
 
-    if (plan.length === DAYS.length && healthyCount / DAYS.length >= 0.7) break;
-    attempts++;
+    if (!opts.length) opts = meals.filter(m => m.days.includes(day));
+    const meal = opts[Math.floor(seededRandom(localSeed++) * opts.length)] || meals[0];
+    plan.push({ day, meal });
+    usedMeals.add(meal.name);
+    lastCore = meal.core;
+    lastType = meal.type;
   }
 
   currentPlan = plan;
