@@ -117,7 +117,6 @@ const ingredientsData = {
   "Pasta Bake": ["Pasta", "Cheese", "Tomato sauce"],
   "Enchilades": ["Tortillas", "Chicken", "Cheese", "Enchilada sauce"],
   "Burrito Bowls": ["Rice", "Chicken or beef", "Black beans", "Corn", "Salsa", "Avocado", "Burrito mix kit"],
-  "Bangers and Mash": ["Sausages", "Potatoes", "Butter", "Onion gravy mix"],
   "Tuna Casserole": ["Tuna", "Pasta", "Cream of mushroom soup", "Peas", "Cheddar cheese"],
   "Chicken Mackahani": ["Chicken", "Butter", "Tomatoes", "Cream", "Garlic", "Sauce kit"],
   "Chicken Korma": ["Chicken", "Coconut milk", "Korma paste", "Rice"],
@@ -162,14 +161,20 @@ function loadShoppingList() {
   }
 }
 
-// 🔹 Export to text file
+// 🔹 ✅ UPDATED: Export to text file (skip crossed-off items)
 function exportList() {
   const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan')) || {};
+  const allItems = Array.from(document.querySelectorAll('.shopping-item'));
+  const uncheckedItems = allItems.filter(item => !item.classList.contains('checked'));
+  
   let exportText = "WEEKLY MEAL PLAN:\n\n";
   for (const [day, meal] of Object.entries(mealPlan)) {
     exportText += `${day}: ${meal}\n`;
-    const items = ingredientsData[meal] || ["Ingredients not listed yet"];
-    items.forEach(i => (exportText += `  - ${i}\n`));
+    const ingredients = ingredientsData[meal] || ["Ingredients not listed yet"];
+    ingredients.forEach(ingredient => {
+      const element = uncheckedItems.find(i => i.textContent === ingredient);
+      if (element) exportText += `  - ${ingredient}\n`;
+    });
     exportText += "\n";
   }
 
@@ -192,5 +197,3 @@ window.onload = loadShoppingList;
 
 </body>
 </html>
-
-
