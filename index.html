@@ -47,9 +47,14 @@
   .highlight { animation: flash 0.4s ease; }
   @keyframes flash { from { background-color: #c8e6c9; } to { background-color: white; } }
 
-  .healthy-label { font-weight: bold; margin-top: 10px; text-align: center; color: #2e7d32; }
+  .healthy-label {
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+    color: #2e7d32;
+    cursor: pointer;
+  }
 
-  /* Dropdown styling */
   select.meal-select {
     width: 100%;
     margin-top: 10px;
@@ -66,7 +71,6 @@
   .dropdown-open .meal { pointer-events: none; }
   .dropdown-open select.meal-select { pointer-events: auto; }
 
-  /* Seed area styling (now at bottom) */
   .seed-box {
     display: flex;
     justify-content: center;
@@ -102,7 +106,6 @@
 
 <div id="meal-plan"></div>
 
-<!-- Seed input moved to bottom -->
 <div class="seed-box">
   <input type="number" id="seedInput" class="seed-input" placeholder="Enter seed">
   <button class="small-btn" onclick="copySeed()">Copy Seed</button>
@@ -110,7 +113,6 @@
 </div>
 
 <script>
-/* ---------- Data & state ---------- */
 const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 const meals = [
   {name:"General Tso Chicken",days:["Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Asian"},
@@ -162,7 +164,7 @@ function savePlans(plans){localStorage.setItem('savedMealPlans',JSON.stringify(p
 function persistPlan(seed){const p={};currentPlan.forEach(e=>p[e.day]=e.meal.name);
 localStorage.setItem('weeklyMealPlan',JSON.stringify(p));
 localStorage.setItem('mealSeed',seed);
-const plans=getSavedPlans();plans[seed]=p;savePlans(plans);}
+const plans=getSavedPlans();plans[String(seed)]=p;savePlans(plans);}
 
 function seededRandom(seed){let x=Math.sin(seed++)*10000;return x-Math.floor(x);}
 
@@ -179,7 +181,7 @@ function generateMealPlan(seed=Math.floor(Math.random()*999999)){
     }
     if(healthyCount/DAYS.length>=0.7)break;
   }
-  currentPlan=plan;persistPlan(String(currentSeed));renderPlan();
+  currentPlan=plan;persistPlan(currentSeed);renderPlan();
 }
 
 function renderPlan(){
@@ -197,6 +199,7 @@ function renderPlan(){
   const label=document.createElement("div");
   label.className="healthy-label";
   label.textContent=`Healthy meals this week: ${Math.round((healthyCount/DAYS.length)*100)}% (Seed #${currentSeed})`;
+  label.onclick=copySeed; // Click label to copy seed
   div.appendChild(label);
   document.getElementById("seedInput").value=currentSeed||"";
 }
@@ -214,8 +217,7 @@ function openSelector(i,div){
   s.addEventListener("change",e=>{
     const sel=meals.find(m=>m.name===e.target.value)||{name:e.target.value,health:0,core:"",type:""};
     currentPlan[i].meal=sel;
-    currentSeed=Math.floor(Math.random()*999999);
-    persistPlan(String(currentSeed));
+    persistPlan(currentSeed);
     s.remove();document.body.classList.remove("dropdown-open");renderPlan();
   });
   function close(ev){if(!s.contains(ev.target)){s.remove();document.body.classList.remove("dropdown-open");
@@ -226,40 +228,54 @@ function openSelector(i,div){
 
 function openShoppingList(){
   if(!currentPlan.length)return alert("Please generate your meal plan first!");
-  persistPlan(String(currentSeed));window.location.href='shopping.html';
+  persistPlan(currentSeed);window.location.href='shopping.html';
 }
-function loadFromSeed(){const v=document.getElementById("seedInput").value;if(!v)return alert("Enter a seed first!");loadSeed(v);}
-function loadSeed(seed){seed=String(seed);const plans=getSavedPlans();if(plans[seed]){
-  const saved=plans[seed];currentPlan=Object.entries(saved).map(([d,m])=>{const f=meals.find(x=>x.name===m);
-  return{day:d,meal:f||{name:m,health:0,core:"",type:""}}});currentSeed=Number(seed);persistPlan(seed);renderPlan();}
-  else generateMealPlan(Number(seed));}
 
-/* --- Copy seed button --- */
+function loadFromSeed(){
+  const v=document.getElementById("seedInput").value.trim();
+  if(!v)return alert("Enter a seed first!");
+  loadSeed(v);
+}
+
+function loadSeed(seed){
+  seed=String(seed);
+  const plans=getSavedPlans();
+  if(plans[seed]){
+    const saved=plans[seed];
+    currentPlan=Object.entries(saved).map(([d,m])=>{
+      const f=meals.find(x=>x.name===m);
+      return{day:d,meal:f||{name:m,health:0,core:"",type:""}};
+    });
+    currentSeed=Number(seed);
+    persistPlan(seed);
+    renderPlan();
+  } else {
+    generateMealPlan(Number(seed));
+  }
+}
+
 function copySeed(){
   if(!currentSeed)return alert("Generate a plan first!");
   navigator.clipboard.writeText(currentSeed.toString()).then(()=>{
-    const input=document.getElementById("seedInput");
-    input.value=currentSeed;
-    alert(`Seed #${currentSeed} copied!`);
+    document.getElementById("seedInput").value=currentSeed;
+    alert(`Seed #${currentSeed} copied and filled!`);
   });
 }
 
-/* --- On load --- */
 window.onload=()=>{
   const seed=localStorage.getItem('mealSeed');
-  const plan=localStorage.getItem('weeklyMealPlan');
   const plans=getSavedPlans();
   if(seed&&plans[seed]){
     const saved=plans[seed];
-    currentPlan=Object.entries(saved).map(([d,m])=>{const f=meals.find(x=>x.name===m);
-    return{day:d,meal:f||{name:m,health:0,core:"",type:""}}});
-    currentSeed=Number(seed);renderPlan();return;
+    currentPlan=Object.entries(saved).map(([d,m])=>{
+      const f=meals.find(x=>x.name===m);
+      return{day:d,meal:f||{name:m,health:0,core:"",type:""}};
+    });
+    currentSeed=Number(seed);
+    renderPlan();
+  } else {
+    generateMealPlan();
   }
-  if(plan){const p=JSON.parse(plan);
-    currentPlan=Object.entries(p).map(([d,m])=>{const f=meals.find(x=>x.name===m);
-    return{day:d,meal:f||{name:m,health:0,core:"",type:""}}});
-    currentSeed=seed?Number(seed):null;renderPlan();return;}
-  generateMealPlan();
 };
 </script>
 
