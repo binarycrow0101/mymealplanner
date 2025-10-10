@@ -94,4 +94,82 @@ const ingredientsData = {
   "Tomato Basil Chicken": ["Chicken thighs", "Cherry tomatoes", "Basil", "Garlic", "Olive oil", "Potatoes"],
   "Minestrone soup": ["Mixed vegetables", "Pasta", "Tomatoes", "Beans", "Vegetable broth"],
   "Artichoke risotto": ["Arborio rice", "Artichokes", "Garlic", "Parmesan", "Vegetable stock"],
-  "Beef Bur
+  "Beef Burgers": ["Burgers", "Burger buns", "Cheese slices", "Lettuce", "Tomatoes", "Chips", "Greens", "Pickles"],
+  "Chicken Burgers": ["Chicken breast", "Burger buns", "Cheese slices", "Lettuce", "Tomatoes", "Chips", "Greens"],
+  "Turkey Burgers": ["Turkey mince", "Burger buns", "Cheese slices", "Lettuce", "Tomatoes", "Chips", "Greens"],
+  "Pasta Bake": ["Pasta", "Cheese", "Tomato sauce"],
+  "Enchilades": ["Tortillas", "Chicken", "Cheese", "Enchilada sauce"],
+  "Burrito Bowls": ["Rice", "Chicken or beef", "Black beans", "Corn", "Salsa", "Avocado", "Burrito mix kit"],
+  "Tuna Casserole": ["Tuna", "Pasta", "Cream of mushroom soup", "Peas", "Cheddar cheese"],
+  "Chicken Mackahani": ["Chicken", "Butter", "Tomatoes", "Cream", "Garlic", "Sauce kit"],
+  "Chicken Korma": ["Chicken", "Coconut milk", "Korma Kit", "Instant Rice"],
+  "Sticky Mushrooms": ["Mushrooms", "Soy sauce", "Honey", "Garlic", "Rice"],
+  "Halloumi Tacos": ["Halloumi", "Taco shells", "Bell peppers", "Corn", "Nandos Maya"]
+};
+
+function loadShoppingList() {
+  const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan'));
+  const summaryDiv = document.getElementById('summary');
+  const listDiv = document.getElementById('shopping-list');
+
+  if (!mealPlan) {
+    summaryDiv.innerHTML = "<p class='empty-message'>No meal plan found. Please go back and generate one first.</p>";
+    return;
+  }
+
+  let summaryHTML = "<strong>This Week’s Meals:</strong><br>";
+  for (const [day, meal] of Object.entries(mealPlan)) {
+    summaryHTML += `${day}: ${meal}<br>`;
+  }
+  summaryDiv.innerHTML = summaryHTML;
+
+  listDiv.innerHTML = "";
+  for (const [day, meal] of Object.entries(mealPlan)) {
+    const header = document.createElement("div");
+    header.className = "meal-header";
+    header.textContent = `${day}: ${meal}`;
+    listDiv.appendChild(header);
+
+    const items = ingredientsData[meal] || ["Ingredients not listed yet"];
+    items.forEach(ingredient => {
+      const itemDiv = document.createElement("div");
+      itemDiv.className = "shopping-item";
+      itemDiv.textContent = ingredient;
+      itemDiv.onclick = () => itemDiv.classList.toggle("checked");
+      listDiv.appendChild(itemDiv);
+    });
+  }
+}
+
+// ✅ Export for To Do
+function exportList() {
+  const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan')) || {};
+  const allItems = Array.from(document.querySelectorAll('.shopping-item'));
+  const uncheckedItems = allItems.filter(item => !item.classList.contains('checked'));
+
+  let exportText = "🛒 WEEKLY SHOPPING LIST\n\n";
+  for (const [day, meal] of Object.entries(mealPlan)) {
+    exportText += `📅 ${day.toUpperCase()} — ${meal}\n`;
+    const ingredients = ingredientsData[meal] || ["Ingredients not listed yet"];
+    ingredients.forEach(ingredient => {
+      const element = uncheckedItems.find(i => i.textContent === ingredient);
+      if (element) exportText += `• ${ingredient}\n`;
+    });
+    exportText += "\n";
+  }
+
+  navigator.clipboard.writeText(exportText).then(() => {
+    alert("✅ Shopping list copied! Paste into Microsoft To Do — each line will become a new task.");
+  }).catch(() => {
+    alert("❌ Could not copy to clipboard. Please allow clipboard access.");
+  });
+}
+
+function goBack() {
+  window.location.href = "index.html";
+}
+
+window.onload = loadShoppingList;
+</script>
+</body>
+</html>
