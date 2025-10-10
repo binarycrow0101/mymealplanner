@@ -1,0 +1,11 @@
+{
+  "meals": [
+    { "name": "General Tso Chicken", "days": ["Monday"], "health": 3, "core": "Chicken", "type": "Asian", "ingredients": ["Chicken breast", "Soy sauce", "Garlic", "Ginger", "Rice", "Cornflour", "Broccoli"] },
+    { "name": "Taco's", "days": ["Tuesday"], "health": 3, "core": "Beef", "type": "Mexican", "ingredients": ["Minced beef/turkey", "Taco shells", "Taco mix", "Lettuce", "Cheddar cheese", "Tomatoes", "Sour cream"] },
+    { "name": "Pasta and Red Sauce", "days": ["Wednesday"], "health": 4, "core": "Pasta", "type": "Italian", "ingredients": ["Rigatoni pasta", "Tomato sauce", "Mozzarella cheese", "Garlic bread"] },
+    { "name": "Chicken Souvlaki", "days": ["Thursday"], "health": 5, "core": "Chicken", "type": "Greek", "ingredients": ["Chicken breast", "Lemon", "Garlic", "Tzatziki sauce", "Pita bread", "Olive oil", "Oregano", "Bell peppers", "Chips", "Tomatoes", "Lettuce"] },
+    { "name": "Roast Chicken", "days": ["Sunday"], "health": 5, "core": "Chicken", "type": "Roast", "ingredients": ["Whole chicken", "Potatoes", "Carrots", "Parsnips", "Yorkshire puds", "Gravy", "Lemons", "Rosemary and Thyme"] },
+    { "name": "Avocado Toast", "days": ["Breakfast"], "health": 4, "core": "Eggs", "type": "Breakfast", "ingredients": ["Nice bread", "Avocado", "Feta cheese", "Eggs", "Bacon"] },
+    { "name": "Jerk Chicken", "days": ["Saturday"], "health": 3, "core": "Chicken", "type": "Caribbean", "ingredients": ["Chicken thighs", "Jerk seasoning", "Jerk paste", "Lime", "Rice", "Coconut milk", "Kidney beans", "Sweetcorn"] }
+  ]
+}
