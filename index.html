@@ -161,30 +161,53 @@ const plans=getSavedPlans();plans[String(seed)]=p;savePlans(plans);}
 
 function seededRandom(seed){let x=Math.sin(seed++)*10000;return x-Math.floor(x);}
 
-function generateMealPlan(seed=Math.floor(Math.random()*999999)){
-  seed=Number(seed);currentSeed=seed;
-  let plan=[],usedMeals=new Set(),lastCore=null,lastType=null,healthyCount=0,localSeed=seed;
+// ✅ Fixed & safe meal generation function
+function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
+  seed = Number(seed);
+  currentSeed = seed;
 
-  while(true){
-    plan=[];usedMeals.clear();lastCore=null;lastType=null;healthyCount=0;localSeed=seed;
+  let plan = [];
+  let usedMeals = new Set();
+  let lastCore = null;
+  let lastType = null;
+  let healthyCount = 0;
+  let localSeed = seed;
+  let attempts = 0;
 
-    for(let day of DAYS){
-      let opts=meals.filter(m=>m.days.includes(day) && !usedMeals.has(m.name) && m.core!==lastCore && m.type!==lastType);
-      if(!opts.length) opts=meals.filter(m=>m.days.includes(day) && !usedMeals.has(m.name));
-      if(!opts.length) opts=meals.filter(m=>m.days.includes(day)); // final fallback
+  while (attempts < 1000) { // prevent infinite loop
+    plan = [];
+    usedMeals.clear();
+    lastCore = null;
+    lastType = null;
+    healthyCount = 0;
+    localSeed = seed;
 
-      const meal=opts[Math.floor(seededRandom(localSeed++)*opts.length)];
-      plan.push({day,meal});
+    for (let day of DAYS) {
+      let opts = meals.filter(
+        m => m.days.includes(day) && !usedMeals.has(m.name) && m.core !== lastCore && m.type !== lastType
+      );
+
+      if (!opts.length)
+        opts = meals.filter(m => m.days.includes(day) && !usedMeals.has(m.name));
+      if (!opts.length)
+        opts = meals.filter(m => m.days.includes(day));
+      if (!opts.length) continue;
+
+      const meal = opts[Math.floor(seededRandom(localSeed++) * opts.length)];
+      if (!meal) continue;
+
+      plan.push({ day, meal });
       usedMeals.add(meal.name);
-      lastCore=meal.core;
-      lastType=meal.type;
-      if(meal.health>=3) healthyCount++;
+      lastCore = meal.core;
+      lastType = meal.type;
+      if (meal.health >= 3) healthyCount++;
     }
 
-    if(healthyCount/DAYS.length>=0.7) break;
+    if (plan.length === DAYS.length && healthyCount / DAYS.length >= 0.7) break;
+    attempts++;
   }
 
-  currentPlan=plan;
+  currentPlan = plan;
   persistPlan(currentSeed);
   renderPlan();
 }
