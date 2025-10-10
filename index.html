@@ -71,12 +71,15 @@
   .dropdown-open .meal { pointer-events: none; }
   .dropdown-open select.meal-select { pointer-events: auto; }
 
+  /* ✅ Seed box layout (bottom of page) */
   .seed-box {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 8px;
-    margin-top: 25px;
+    margin-top: 35px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
     flex-wrap: wrap;
   }
 
@@ -107,11 +110,12 @@
 
 <div id="meal-plan"></div>
 
+<!-- ✅ Seed input and control buttons at bottom -->
 <div class="seed-box">
   <input type="number" id="seedInput" class="seed-input" placeholder="Enter seed">
-  <button class="small-btn" onclick="copySeed()">Copy Seed</button>
-  <button class="small-btn" onclick="pasteSeed()">Paste Seed</button>
-  <button class="small-btn" onclick="loadFromSeed()">Load Seed</button>
+  <button class="small-btn" onclick="copySeed()">Copy</button>
+  <button class="small-btn" onclick="pasteSeed()">Paste</button>
+  <button class="small-btn" onclick="loadFromSeed()">Load</button>
 </div>
 
 <script>
@@ -264,14 +268,15 @@ function copySeed(){
   });
 }
 
-function pasteSeed(){
-  navigator.clipboard.readText().then(text=>{
-    if(!text)return alert("Clipboard is empty or blocked.");
-    const num=text.replace(/\D/g,"");
-    if(!num)return alert("No valid seed number found in clipboard.");
-    document.getElementById("seedInput").value=num;
-    alert(`Pasted seed #${num}`);
-  }).catch(()=>alert("Clipboard access denied. Please allow clipboard permissions."));
+async function pasteSeed() {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text) return alert("Clipboard is empty!");
+    document.getElementById("seedInput").value = text.trim();
+    alert(`Seed ${text.trim()} pasted!`);
+  } catch (err) {
+    alert("Unable to read clipboard (browser permission may be required).");
+  }
 }
 
 window.onload=()=>{
