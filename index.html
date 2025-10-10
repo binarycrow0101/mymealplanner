@@ -14,10 +14,7 @@
     color: #333;
   }
 
-  h1 {
-    text-align: center;
-    margin-bottom: 10px;
-  }
+  h1 { text-align: center; margin-bottom: 10px; }
 
   button {
     display: block;
@@ -32,10 +29,7 @@
     font-weight: 600;
     transition: background 0.2s;
   }
-
-  button:hover {
-    background: #005fa3;
-  }
+  button:hover { background: #005fa3; }
 
   .meal {
     margin: 8px 0;
@@ -47,43 +41,17 @@
     transition: background 0.2s, transform 0.1s;
     position: relative;
   }
+  .meal:active { transform: scale(0.98); }
+  .meal:hover { background: #f1f7ff; }
 
-  .meal:active {
-    transform: scale(0.98);
-  }
+  .highlight { animation: flash 0.4s ease; }
+  @keyframes flash { from { background-color: #c8e6c9; } to { background-color: white; } }
 
-  .meal:hover {
-    background: #f1f7ff;
-  }
+  .healthy-label { font-weight: bold; margin-top: 10px; text-align: center; color: #2e7d32; }
 
-  .highlight {
-    animation: flash 0.4s ease;
-  }
-
-  @keyframes flash {
-    from { background-color: #c8e6c9; }
-    to { background-color: white; }
-  }
-
-  .healthy-label {
-    font-weight: bold;
-    margin-top: 10px;
-    text-align: center;
-    color: #2e7d32;
-  }
-
-  .seed-box {
-    text-align: center;
-    margin-bottom: 10px;
-  }
-
+  .seed-box { text-align: center; margin-bottom: 10px; }
   .seed-input {
-    width: 120px;
-    padding: 6px;
-    margin-right: 8px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    text-align: center;
+    width: 120px; padding: 6px; margin-right: 8px; border-radius: 6px; border: 1px solid #ccc; text-align: center;
   }
 
   /* Dropdown styling */
@@ -95,19 +63,14 @@
     border: 1px solid #ccc;
     font-size: 16px;
     background-color: white;
-    z-index: 1000; /* ensures dropdown overlays others */
+    z-index: 1000; /* ensure it overlays */
     position: relative;
     pointer-events: auto;
   }
 
-  /* Prevent background meals from being clickable while dropdown open */
-  .dropdown-open .meal {
-    pointer-events: none;
-  }
-
-  .dropdown-open select.meal-select {
-    pointer-events: auto;
-  }
+  /* When a select is open, block clicks on other meal cards */
+  .dropdown-open .meal { pointer-events: none; }
+  .dropdown-open select.meal-select { pointer-events: auto; }
 </style>
 </head>
 <body>
@@ -125,7 +88,8 @@
 <div id="meal-plan"></div>
 
 <script>
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+/* ---------- Data & state ---------- */
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 
 const meals = [
   {name:"General Tso Chicken",days:["Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Asian"},
@@ -172,15 +136,46 @@ const meals = [
 let currentPlan = [];
 let currentSeed = null;
 
+/* ---------- Helpers for saved plans ---------- */
+function getSavedPlans() {
+  try {
+    return JSON.parse(localStorage.getItem('savedMealPlans')) || {};
+  } catch (e) {
+    return {};
+  }
+}
+function savePlansToStorage(plans) {
+  localStorage.setItem('savedMealPlans', JSON.stringify(plans));
+}
+
+/* Save currentPlan into standard spots and also store under currentSeed if provided */
+function persistPlanUnderSeed(seedStr) {
+  // create day->mealName object
+  const mealPlanObj = {};
+  currentPlan.forEach(entry => mealPlanObj[entry.day] = entry.meal.name);
+
+  // store canonical weekly plan & last seed (shopping.html uses these)
+  localStorage.setItem('weeklyMealPlan', JSON.stringify(mealPlanObj));
+  localStorage.setItem('mealSeed', seedStr);
+
+  // also save into savedMealPlans map so loadFromSeed can restore exact custom plan
+  const plans = getSavedPlans();
+  plans[seedStr] = mealPlanObj;
+  savePlansToStorage(plans);
+}
+
+/* ---------- RNG & generation ---------- */
 function seededRandom(seed) {
   let x = Math.sin(seed++) * 10000;
   return x - Math.floor(x);
 }
 
+/* Generate deterministic plan from a seed (or random seed if none passed).
+   IMPORTANT: currentSeed will be set to the seed used to create the plan. */
 function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
+  // ensure seed is integer
+  seed = Number(seed);
   currentSeed = seed;
-  const planDiv = document.getElementById("meal-plan");
-  planDiv.innerHTML = "";
 
   let plan = [];
   let lastCore = null;
@@ -201,8 +196,9 @@ function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
         m.type !== lastType
       );
       if (options.length === 0) options = meals.filter(m => m.days.includes(day));
+
       const randIndex = Math.floor(seededRandom(localSeed++) * options.length);
-      let meal = options[randIndex];
+      const meal = options[randIndex];
       plan.push({ day, meal });
       lastCore = meal.core;
       lastType = meal.type;
@@ -210,19 +206,27 @@ function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
     }
 
     if ((healthyCount / DAYS.length) >= 0.7) break;
+    // note: loop will repeat until healthy threshold satisfied
   }
 
   currentPlan = plan;
-  currentSeed = Math.floor(Math.random() * 999999);
-  saveMealPlan();
+
+  // persist the generated plan under this seed (helps reproduce it later)
+  persistPlanUnderSeed(String(currentSeed));
+
   renderPlan();
 }
 
+/* ---------- Rendering & interaction ---------- */
 function renderPlan() {
   const planDiv = document.getElementById("meal-plan");
   planDiv.innerHTML = "";
   let healthyCount = 0;
+
+  // ensure body not in dropdown-open state
   document.body.classList.remove("dropdown-open");
+  // remove any leftover selects
+  document.querySelectorAll("select.meal-select").forEach(s => s.remove());
 
   currentPlan.forEach((entry, index) => {
     if (entry.meal.health >= 3) healthyCount++;
@@ -230,6 +234,8 @@ function renderPlan() {
     const div = document.createElement("div");
     div.className = "meal";
     div.innerHTML = `<strong>${entry.day}</strong>: ${entry.meal.name}`;
+
+    // click opens selector for that day
     div.onclick = () => openMealSelector(index, div);
 
     planDiv.appendChild(div);
@@ -241,78 +247,177 @@ function renderPlan() {
   planDiv.appendChild(healthyLabel);
 }
 
+/* Open in-place <select> inside the meal div for full list of meals valid on that day.
+   Selecting a meal saves a NEW seed and stores the customised plan under that seed. */
 function openMealSelector(index, div) {
   const day = currentPlan[index].day;
   const options = meals.filter(m => m.days.includes(day));
 
-  // Remove any existing dropdowns
+  // Remove any existing selector
   const existingSelect = document.querySelector("select.meal-select");
-  if (existingSelect) existingSelect.remove();
+  if (existingSelect) {
+    existingSelect.remove();
+    document.body.classList.remove("dropdown-open");
+    // if the same div was clicked and selector existed, we simply closed it
+    if (existingSelect.parentElement === div) return;
+  }
 
+  // create select
   const select = document.createElement("select");
   select.className = "meal-select";
-  select.innerHTML = options.map(m => `<option value="${m.name}" ${m.name===currentPlan[index].meal.name?"selected":""}>${m.name}</option>`).join("");
+  select.innerHTML = options.map(m => `<option value="${escapeHtml(m.name)}" ${m.name === currentPlan[index].meal.name ? "selected" : ""}>${escapeHtml(m.name)}</option>`).join("");
 
-  // Disable other clicks
+  // When dropdown open, prevent other meal cards from receiving clicks
   document.body.classList.add("dropdown-open");
 
-  select.onchange = () => {
-    const selectedMeal = meals.find(m => m.name === select.value);
+  // Change handler: update currentPlan, create new seed and persist mapping
+  select.addEventListener("change", (e) => {
+    const selectedName = e.target.value;
+    const selectedMeal = meals.find(m => m.name === selectedName) || { name: selectedName, health: 0, core: "", type: "" };
     currentPlan[index].meal = selectedMeal;
-    currentSeed = Math.floor(Math.random() * 999999);
-    saveMealPlan();
+
+    // generate new seed for this customised week and persist under that seed
+    const newSeed = Math.floor(Math.random() * 999999);
+    currentSeed = newSeed;
+    persistPlanUnderSeed(String(newSeed));
+
+    // small highlight visual then re-render (select removed in persistPlanUnderSeed)
+    div.classList.add("highlight");
+    setTimeout(() => div.classList.remove("highlight"), 400);
+
+    // remove select and close dropdown state then re-render
     select.remove();
     document.body.classList.remove("dropdown-open");
     renderPlan();
-  };
+  }, { passive: true });
 
-  // When dropdown loses focus, close it safely
-  select.onblur = () => {
-    select.remove();
-    document.body.classList.remove("dropdown-open");
-  };
+  // If user taps outside the select, close it (don't save changes)
+  function outsideHandler(ev) {
+    if (!select.contains(ev.target)) {
+      select.remove();
+      document.body.classList.remove("dropdown-open");
+      document.removeEventListener("click", outsideHandler);
+      document.removeEventListener("touchstart", outsideHandler);
+    }
+  }
+
+  setTimeout(() => {
+    document.addEventListener("click", outsideHandler);
+    document.addEventListener("touchstart", outsideHandler);
+  }, 10);
 
   div.appendChild(select);
-  select.focus({ preventScroll: false });
+
+  // focus the select to open native dropdown on mobile
+  try { select.focus({ preventScroll: false }); } catch (e) { select.focus(); }
 }
 
-function saveMealPlan() {
-  const mealPlan = {};
-  currentPlan.forEach(entry => {
-    mealPlan[entry.day] = entry.meal.name;
-  });
-  localStorage.setItem('weeklyMealPlan', JSON.stringify(mealPlan));
-  localStorage.setItem('mealSeed', currentSeed);
+/* ---------- Storage helpers & shopping sync ---------- */
+/* save currentPlan into weeklyMealPlan & mealSeed (keeps shopping.html working) */
+function saveMealPlanSimple() {
+  const mealPlanObj = {};
+  currentPlan.forEach(entry => mealPlanObj[entry.day] = entry.meal.name);
+  localStorage.setItem('weeklyMealPlan', JSON.stringify(mealPlanObj));
+  localStorage.setItem('mealSeed', String(currentSeed));
 }
 
+/* Persist plan under currentSeed as well as weeklyMealPlan - convenience wrapper */
+function persistCurrentPlan() {
+  saveMealPlanSimple();
+  // also store under savedMealPlans mapping
+  const plans = getSavedPlans();
+  const mealPlanObj = {};
+  currentPlan.forEach(entry => mealPlanObj[entry.day] = entry.meal.name);
+  plans[String(currentSeed)] = mealPlanObj;
+  savePlansToStorage(plans);
+}
+
+/* Called by "View Shopping List" - ensures latest plan is saved for shopping.html */
 function openShoppingList() {
-  if (currentPlan.length === 0) {
+  if (!currentPlan || currentPlan.length === 0) {
     alert("Please generate your meal plan first!");
     return;
   }
-  saveMealPlan();
+  // persist under currentSeed and weeklyMealPlan for shopping page
+  persistCurrentPlan();
   window.location.href = 'shopping.html';
 }
 
+/* ---------- Load by seed logic ---------- */
+/* If a saved custom plan exists for this seed, load it. Otherwise generate deterministically from seed. */
+function loadSeedPlan(seedInput) {
+  const seed = Number(seedInput);
+  const plans = getSavedPlans();
+  const key = String(seed);
+  if (plans[key]) {
+    // load exact saved plan
+    const saved = plans[key];
+    currentPlan = Object.entries(saved).map(([day, mealName]) => {
+      const foundMeal = meals.find(m => m.name === mealName);
+      return { day, meal: foundMeal || { name: mealName, health: 0, core: "", type: "" } };
+    });
+    currentSeed = seed;
+    // ensure weeklyMealPlan and mealSeed kept in localStorage for shopping page compatibility
+    persistCurrentPlan();
+    renderPlan();
+  } else {
+    // no custom saved plan -> generate deterministically from seed
+    generateMealPlan(seed);
+  }
+}
+
+/* loadFromSeed called by UI */
 function loadFromSeed() {
   const input = document.getElementById("seedInput").value;
   if (!input) return alert("Enter a seed number first!");
-  generateMealPlan(parseInt(input));
+  loadSeedPlan(parseInt(input, 10));
 }
 
+/* ---------- Utility ---------- */
+function escapeHtml(unsafe) {
+  return unsafe.replace(/[&<"']/g, function(m) {
+    return ({'&':'&amp;','<':'&lt;','"':'&quot;',"'":'&#39;'}[m]);
+  });
+}
+
+/* ---------- On first load, restore last plan if present ---------- */
 window.onload = () => {
-  const savedPlan = localStorage.getItem('weeklyMealPlan');
   const savedSeed = localStorage.getItem('mealSeed');
-  if (savedPlan && savedSeed) {
+  const savedPlan = localStorage.getItem('weeklyMealPlan');
+
+  if (savedSeed) {
+    // if there's a saved custom plan under this seed, prefer that
+    const plans = getSavedPlans();
+    const key = String(savedSeed);
+    if (plans[key]) {
+      // restore the saved mapping
+      const saved = plans[key];
+      currentPlan = Object.entries(saved).map(([day, mealName]) => {
+        const foundMeal = meals.find(m => m.name === mealName);
+        return { day, meal: foundMeal || { name: mealName, health: 0, core: "", type: "" } };
+      });
+      currentSeed = Number(savedSeed);
+      renderPlan();
+      return;
+    }
+  }
+
+  if (savedPlan) {
+    // fallback: load the generic weeklyMealPlan format
     const parsed = JSON.parse(savedPlan);
-    currentSeed = parseInt(savedSeed);
     currentPlan = Object.entries(parsed).map(([day, mealName]) => {
       const foundMeal = meals.find(m => m.name === mealName);
       return { day, meal: foundMeal || { name: mealName, health: 0, core: "", type: "" } };
     });
+    currentSeed = savedSeed ? Number(savedSeed) : null;
     renderPlan();
+    return;
   }
+
+  // nothing saved yet: generate a fresh plan
+  generateMealPlan();
 };
 </script>
+
 </body>
 </html>
