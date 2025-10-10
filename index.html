@@ -13,9 +13,7 @@
     background: #fafafa;
     color: #333;
   }
-
   h1 { text-align: center; margin-bottom: 10px; }
-
   button {
     display: block;
     width: 100%;
@@ -30,7 +28,6 @@
     transition: background 0.2s;
   }
   button:hover { background: #005fa3; }
-
   .meal {
     margin: 8px 0;
     padding: 16px;
@@ -43,10 +40,8 @@
   }
   .meal:active { transform: scale(0.98); }
   .meal:hover { background: #f1f7ff; }
-
   .highlight { animation: flash 0.4s ease; }
   @keyframes flash { from { background-color: #c8e6c9; } to { background-color: white; } }
-
   .healthy-label {
     font-weight: bold;
     margin-top: 10px;
@@ -54,7 +49,6 @@
     color: #2e7d32;
     cursor: pointer;
   }
-
   select.meal-select {
     width: 100%;
     margin-top: 10px;
@@ -67,10 +61,8 @@
     position: relative;
     pointer-events: auto;
   }
-
   .dropdown-open .meal { pointer-events: none; }
   .dropdown-open select.meal-select { pointer-events: auto; }
-
   .seed-box {
     display: flex;
     justify-content: center;
@@ -79,7 +71,6 @@
     margin-top: 25px;
     flex-wrap: wrap;
   }
-
   .seed-input {
     width: 120px;
     padding: 8px;
@@ -88,7 +79,6 @@
     text-align: center;
     font-size: 16px;
   }
-
   .small-btn {
     padding: 8px 14px;
     font-size: 14px;
@@ -116,6 +106,7 @@
 
 <script>
 const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+
 const meals = [
   {name:"General Tso Chicken",days:["Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Asian"},
   {name:"Taco's",days:["Tuesday","Thursday"],health:3,core:"Turkey",type:"Mexican"},
@@ -172,18 +163,30 @@ function seededRandom(seed){let x=Math.sin(seed++)*10000;return x-Math.floor(x);
 
 function generateMealPlan(seed=Math.floor(Math.random()*999999)){
   seed=Number(seed);currentSeed=seed;
-  let plan=[],lastCore=null,lastType=null,healthyCount=0,localSeed=seed;
+  let plan=[],usedMeals=new Set(),lastCore=null,lastType=null,healthyCount=0,localSeed=seed;
+
   while(true){
-    plan=[];lastCore=null;lastType=null;healthyCount=0;
+    plan=[];usedMeals.clear();lastCore=null;lastType=null;healthyCount=0;localSeed=seed;
+
     for(let day of DAYS){
-      let opts=meals.filter(m=>m.days.includes(day)&&m.core!==lastCore&&m.type!==lastType);
-      if(!opts.length)opts=meals.filter(m=>m.days.includes(day));
+      let opts=meals.filter(m=>m.days.includes(day) && !usedMeals.has(m.name) && m.core!==lastCore && m.type!==lastType);
+      if(!opts.length) opts=meals.filter(m=>m.days.includes(day) && !usedMeals.has(m.name));
+      if(!opts.length) opts=meals.filter(m=>m.days.includes(day)); // final fallback
+
       const meal=opts[Math.floor(seededRandom(localSeed++)*opts.length)];
-      plan.push({day,meal});lastCore=meal.core;lastType=meal.type;if(meal.health>=3)healthyCount++;
+      plan.push({day,meal});
+      usedMeals.add(meal.name);
+      lastCore=meal.core;
+      lastType=meal.type;
+      if(meal.health>=3) healthyCount++;
     }
-    if(healthyCount/DAYS.length>=0.7)break;
+
+    if(healthyCount/DAYS.length>=0.7) break;
   }
-  currentPlan=plan;persistPlan(currentSeed);renderPlan();
+
+  currentPlan=plan;
+  persistPlan(currentSeed);
+  renderPlan();
 }
 
 function renderPlan(){
