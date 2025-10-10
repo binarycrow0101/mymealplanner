@@ -120,139 +120,171 @@
 
 <script>
 const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-const meals = [
-  {name:"General Tso Chicken",days:["Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Asian"},
-  {name:"Taco's",days:["Tuesday","Thursday"],health:3,core:"Turkey",type:"Mexican"},
-  {name:"Jambalaya",days:["Monday","Tuesday","Thursday","Friday"],health:3,core:"Chicken",type:"Rice"},
-  {name:"Jerk Chicken",days:["Monday","Tuesday","Thursday","Friday"],health:4,core:"Chicken",type:"Rice"},
-  {name:"Pasta and Red Sauce",days:["Wednesday"],health:3,core:"Veggie",type:"Pasta"},
-  {name:"Cheddar Broccoli",days:["Monday","Tuesday","Thursday","Friday"],health:3,core:"Veggie",type:"Soup"},
-  {name:"Fish Burgers",days:["Monday","Tuesday","Thursday","Friday"],health:3,core:"Veggie",type:"Burger"},
-  {name:"Stir Fry",days:["Monday","Tuesday","Thursday","Friday"],health:5,core:"Mixed",type:"Asian"},
-  {name:"Rotisserie Chicken",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Chicken",type:"Roast"},
-  {name:"Take Out",days:["Friday","Saturday"],health:1,core:"Mixed",type:"Any"},
-  {name:"Chicken Souvlaki",days:["Monday","Tuesday","Thursday","Friday"],health:4,core:"Chicken",type:"Greek"},
-  {name:"Avacado Toast",days:["Monday","Tuesday","Thursday","Friday","Saturday"],health:4,core:"Veggie",type:"Breakfast"},
-  {name:"Chicken parm",days:["Monday","Tuesday","Thursday","Friday","Saturday"],health:2,core:"Chicken",type:"Pasta"},
-  {name:"Roast Chicken",days:["Sunday"],health:4,core:"Chicken",type:"Roast"},
-  {name:"Tomato Basil Chicken",days:["Saturday","Sunday"],health:4,core:"Chicken",type:"Roast"},
-  {name:"Minestrone soup",days:["Saturday","Sunday"],health:5,core:"Veggie",type:"Soup"},
-  {name:"Artichoke risotto",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Veggie",type:"Risotto"},
-  {name:"Pizza",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Veggie",type:"Pizza"},
-  {name:"Salad",days:["Monday","Tuesday","Thursday","Friday","Saturday"],health:5,core:"Veggie",type:"Salad"},
-  {name:"Fajitas",days:["Tuesday","Thursday"],health:4,core:"Chicken",type:"Mexican"},
-  {name:"Spaghetti Meatballs",days:["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Beef",type:"Pasta"},
-  {name:"Cheese and Biscuits",days:["Friday","Saturday","Sunday"],health:1,core:"Mixed",type:"Snacky"},
-  {name:"Buffalo Wing Dip",days:["Saturday","Sunday"],health:1,core:"Chicken",type:"Snacky"},
-  {name:"BBQ pasta",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Beef",type:"Pasta"},
-  {name:"Salmon",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:5,core:"Fish",type:"Asian"},
-  {name:"Garlic Noodles",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Mixed",type:"Noodles"},
-  {name:"M&S Dine In",days:["Friday","Saturday","Sunday"],health:2,core:"Mixed",type:"Any"},
-  {name:"Beef Burgers",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Beef",type:"Burger"},
-  {name:"Chicken Burgers",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Chicken",type:"Burger"},
-  {name:"Turkey Burgers",days:["Friday","Saturday","Sunday"],health:4,core:"Turkey",type:"Burger"},
-  {name:"Pasta Bake",days:["Wednesday"],health:2,core:"Veggie",type:"Pasta"},
-  {name:"Enchilades",days:["Tuesday","Thursday"],health:3,core:"Mixed",type:"Mexican"},
-  {name:"Burrito Bowls",days:["Tuesday","Thursday"],health:4,core:"Mixed",type:"Mexican"},
-  {name:"Bangers and Mash",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Mixed",type:"Heavy"},
-  {name:"Tuna Casserole",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:3,core:"Fish",type:"Pasta"},
-  {name:"Chicken Mackahani",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Indian"},
-  {name:"Chicken Korma",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:2,core:"Chicken",type:"Indian"},
-  {name:"Sticky Mushrooms",days:["Friday","Saturday","Sunday"],health:3,core:"Veggie",type:"Asian"},
-  {name:"Halloumi Tacos",days:["Monday","Tuesday","Thursday","Friday","Saturday","Sunday"],health:4,core:"Veggie",type:"Mexican"},
-];
-
+let meals = [];
 let currentPlan = [];
 let currentSeed = null;
 
-function getSavedPlans(){ try {return JSON.parse(localStorage.getItem('savedMealPlans'))||{};}catch{return{}}}
-function savePlans(plans){localStorage.setItem('savedMealPlans',JSON.stringify(plans))}
-function persistPlan(seed){const p={};currentPlan.forEach(e=>p[e.day]=e.meal.name);
-localStorage.setItem('weeklyMealPlan',JSON.stringify(p));
-localStorage.setItem('mealSeed',seed);
-const plans=getSavedPlans();plans[String(seed)]=p;savePlans(plans);}
+// ✅ Load meals from external JSON file
+fetch('meals.json')
+  .then(response => response.json())
+  .then(data => {
+    meals = data.meals;
+    initializeApp();
+  })
+  .catch(err => {
+    console.error("Error loading meals.json:", err);
+    alert("Couldn't load meal data. Please check meals.json is in the same folder.");
+  });
 
-function seededRandom(seed){let x=Math.sin(seed++)*10000;return x-Math.floor(x);}
-
-function generateMealPlan(seed=Math.floor(Math.random()*999999)){
-  seed=Number(seed);currentSeed=seed;
-  let plan=[],lastCore=null,lastType=null,healthyCount=0,localSeed=seed;
-  while(true){
-    plan=[];lastCore=null;lastType=null;healthyCount=0;
-    for(let day of DAYS){
-      let opts=meals.filter(m=>m.days.includes(day)&&m.core!==lastCore&&m.type!==lastType);
-      if(!opts.length)opts=meals.filter(m=>m.days.includes(day));
-      const meal=opts[Math.floor(seededRandom(localSeed++)*opts.length)];
-      plan.push({day,meal});lastCore=meal.core;lastType=meal.type;if(meal.health>=3)healthyCount++;
-    }
-    if(healthyCount/DAYS.length>=0.7)break;
+// ✅ Initialize the app only after meals are loaded
+function initializeApp() {
+  const seed = localStorage.getItem('mealSeed');
+  const plans = getSavedPlans();
+  if (seed && plans[seed]) {
+    const saved = plans[seed];
+    currentPlan = Object.entries(saved).map(([d, m]) => {
+      const f = meals.find(x => x.name === m);
+      return { day: d, meal: f || { name: m, health: 0, core: "", type: "" } };
+    });
+    currentSeed = Number(seed);
+    renderPlan();
+  } else {
+    generateMealPlan();
   }
-  currentPlan=plan;persistPlan(currentSeed);renderPlan();
 }
 
-function renderPlan(){
-  const div=document.getElementById("meal-plan");div.innerHTML="";
+function getSavedPlans() {
+  try { return JSON.parse(localStorage.getItem('savedMealPlans')) || {}; }
+  catch { return {}; }
+}
+function savePlans(plans) { localStorage.setItem('savedMealPlans', JSON.stringify(plans)); }
+function persistPlan(seed) {
+  const p = {};
+  currentPlan.forEach(e => p[e.day] = e.meal.name);
+  localStorage.setItem('weeklyMealPlan', JSON.stringify(p));
+  localStorage.setItem('mealSeed', seed);
+  const plans = getSavedPlans();
+  plans[String(seed)] = p;
+  savePlans(plans);
+}
+
+function seededRandom(seed) {
+  let x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+}
+
+function generateMealPlan(seed = Math.floor(Math.random() * 999999)) {
+  seed = Number(seed);
+  currentSeed = seed;
+  let plan = [], lastCore = null, lastType = null, healthyCount = 0, localSeed = seed;
+
+  while (true) {
+    plan = []; lastCore = null; lastType = null; healthyCount = 0;
+    for (let day of DAYS) {
+      let opts = meals.filter(m => m.days.includes(day) && m.core !== lastCore && m.type !== lastType);
+      if (!opts.length) opts = meals.filter(m => m.days.includes(day));
+      const meal = opts[Math.floor(seededRandom(localSeed++) * opts.length)];
+      plan.push({ day, meal });
+      lastCore = meal.core;
+      lastType = meal.type;
+      if (meal.health >= 3) healthyCount++;
+    }
+    if (healthyCount / DAYS.length >= 0.7) break;
+  }
+  currentPlan = plan;
+  persistPlan(currentSeed);
+  renderPlan();
+}
+
+function renderPlan() {
+  const div = document.getElementById("meal-plan");
+  div.innerHTML = "";
   document.body.classList.remove("dropdown-open");
-  document.querySelectorAll("select.meal-select").forEach(s=>s.remove());
-  let healthyCount=0;
-  currentPlan.forEach((e,i)=>{if(e.meal.health>=3)healthyCount++;
-    const d=document.createElement("div");
-    d.className="meal";
-    d.innerHTML=`<strong>${e.day}</strong>: ${e.meal.name}`;
-    d.onclick=()=>openSelector(i,d);
+  document.querySelectorAll("select.meal-select").forEach(s => s.remove());
+  let healthyCount = 0;
+
+  currentPlan.forEach((e, i) => {
+    if (e.meal.health >= 3) healthyCount++;
+    const d = document.createElement("div");
+    d.className = "meal";
+    d.innerHTML = `<strong>${e.day}</strong>: ${e.meal.name}`;
+    d.onclick = () => openSelector(i, d);
     div.appendChild(d);
   });
-  const label=document.createElement("div");
-  label.className="healthy-label";
-  label.textContent=`Healthy meals this week: ${Math.round((healthyCount/DAYS.length)*100)}% (Seed #${currentSeed})`;
-  label.onclick=copySeed;
+
+  const label = document.createElement("div");
+  label.className = "healthy-label";
+  label.textContent = `Healthy meals this week: ${Math.round((healthyCount / DAYS.length) * 100)}% (Seed #${currentSeed})`;
+  label.onclick = copySeed;
   div.appendChild(label);
-  document.getElementById("seedInput").value=currentSeed||"";
+  document.getElementById("seedInput").value = currentSeed || "";
 }
 
-function openSelector(i,div){
-  const day=currentPlan[i].day;
-  const opts=meals.filter(m=>m.days.includes(day));
-  const existing=document.querySelector("select.meal-select");
-  if(existing){existing.remove();document.body.classList.remove("dropdown-open");
-    if(existing.parentElement===div)return;}
-  const s=document.createElement("select");
-  s.className="meal-select";
-  s.innerHTML=opts.map(m=>`<option value="${m.name}" ${m.name===currentPlan[i].meal.name?"selected":""}>${m.name}</option>`).join("");
+function openSelector(i, div) {
+  const day = currentPlan[i].day;
+  const opts = meals.filter(m => m.days.includes(day));
+  const existing = document.querySelector("select.meal-select");
+  if (existing) {
+    existing.remove();
+    document.body.classList.remove("dropdown-open");
+    if (existing.parentElement === div) return;
+  }
+
+  const s = document.createElement("select");
+  s.className = "meal-select";
+  s.innerHTML = opts.map(m =>
+    `<option value="${m.name}" ${m.name === currentPlan[i].meal.name ? "selected" : ""}>${m.name}</option>`
+  ).join("");
+
   document.body.classList.add("dropdown-open");
-  s.addEventListener("change",e=>{
-    const sel=meals.find(m=>m.name===e.target.value)||{name:e.target.value,health:0,core:"",type:""};
-    currentPlan[i].meal=sel;
+  s.addEventListener("change", e => {
+    const sel = meals.find(m => m.name === e.target.value) || { name: e.target.value, health: 0, core: "", type: "" };
+    currentPlan[i].meal = sel;
     persistPlan(currentSeed);
-    s.remove();document.body.classList.remove("dropdown-open");renderPlan();
+    s.remove();
+    document.body.classList.remove("dropdown-open");
+    renderPlan();
   });
-  function close(ev){if(!s.contains(ev.target)){s.remove();document.body.classList.remove("dropdown-open");
-    document.removeEventListener("click",close);document.removeEventListener("touchstart",close);}}
-  setTimeout(()=>{document.addEventListener("click",close);document.addEventListener("touchstart",close);},10);
-  div.appendChild(s);try{s.focus();}catch{}
+
+  function close(ev) {
+    if (!s.contains(ev.target)) {
+      s.remove();
+      document.body.classList.remove("dropdown-open");
+      document.removeEventListener("click", close);
+      document.removeEventListener("touchstart", close);
+    }
+  }
+  setTimeout(() => {
+    document.addEventListener("click", close);
+    document.addEventListener("touchstart", close);
+  }, 10);
+
+  div.appendChild(s);
+  try { s.focus(); } catch { }
 }
 
-function openShoppingList(){
-  if(!currentPlan.length)return alert("Please generate your meal plan first!");
-  persistPlan(currentSeed);window.location.href='shopping.html';
+function openShoppingList() {
+  if (!currentPlan.length) return alert("Please generate your meal plan first!");
+  persistPlan(currentSeed);
+  window.location.href = 'shopping.html';
 }
 
-function loadFromSeed(){
-  const v=document.getElementById("seedInput").value.trim();
-  if(!v)return alert("Enter a seed first!");
+function loadFromSeed() {
+  const v = document.getElementById("seedInput").value.trim();
+  if (!v) return alert("Enter a seed first!");
   loadSeed(v);
 }
 
-function loadSeed(seed){
-  seed=String(seed);
-  const plans=getSavedPlans();
-  if(plans[seed]){
-    const saved=plans[seed];
-    currentPlan=Object.entries(saved).map(([d,m])=>{
-      const f=meals.find(x=>x.name===m);
-      return{day:d,meal:f||{name:m,health:0,core:"",type:""}};
+function loadSeed(seed) {
+  seed = String(seed);
+  const plans = getSavedPlans();
+  if (plans[seed]) {
+    const saved = plans[seed];
+    currentPlan = Object.entries(saved).map(([d, m]) => {
+      const f = meals.find(x => x.name === m);
+      return { day: d, meal: f || { name: m, health: 0, core: "", type: "" } };
     });
-    currentSeed=Number(seed);
+    currentSeed = Number(seed);
     persistPlan(seed);
     renderPlan();
   } else {
@@ -260,10 +292,10 @@ function loadSeed(seed){
   }
 }
 
-function copySeed(){
-  if(!currentSeed)return alert("Generate a plan first!");
-  navigator.clipboard.writeText(currentSeed.toString()).then(()=>{
-    document.getElementById("seedInput").value=currentSeed;
+function copySeed() {
+  if (!currentSeed) return alert("Generate a plan first!");
+  navigator.clipboard.writeText(currentSeed.toString()).then(() => {
+    document.getElementById("seedInput").value = currentSeed;
     alert(`Seed #${currentSeed} copied and filled!`);
   });
 }
@@ -278,22 +310,6 @@ async function pasteSeed() {
     alert("Unable to read clipboard (browser permission may be required).");
   }
 }
-
-window.onload=()=>{
-  const seed=localStorage.getItem('mealSeed');
-  const plans=getSavedPlans();
-  if(seed&&plans[seed]){
-    const saved=plans[seed];
-    currentPlan=Object.entries(saved).map(([d,m])=>{
-      const f=meals.find(x=>x.name===m);
-      return{day:d,meal:f||{name:m,health:0,core:"",type:""}};
-    });
-    currentSeed=Number(seed);
-    renderPlan();
-  } else {
-    generateMealPlan();
-  }
-};
 </script>
 
 </body>
