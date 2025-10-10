@@ -88,26 +88,41 @@
 <button onclick="goBack()">Return to Main Page</button>
 
 <script>
-let mealsData = [];
-
-// ✅ Fetch shared meal data dynamically
-async function loadMealsData() {
-  try {
-    const response = await fetch('meals.json');
-    const data = await response.json();
-    mealsData = data.meals || [];
-    loadShoppingList();
-  } catch (err) {
-    console.error("Error loading meals.json:", err);
-    document.getElementById('summary').innerHTML = 
-      "<p class='empty-message'>❌ Could not load meals data. Check your meals.json file.</p>";
-  }
-}
-
-function getIngredients(mealName) {
-  const meal = mealsData.find(m => m.name === mealName);
-  return meal && meal.ingredients ? meal.ingredients : ["Ingredients not listed yet"];
-}
+const ingredientsData = {
+  "General Tso Chicken": ["Chicken breast", "Soy sauce", "Garlic", "Ginger", "Rice", "Cornflour", "Broccoli"],
+  "Taco's": ["Minced beef/turkey","Taco shells","Taco mix", "Lettuce", "Cheddar cheese","Tomatoes","Sour cream"],
+  "Pasta and Red Sauce": ["Rigatoni pasta", "Tomato sauce", "Mozzarella cheese", "Garlic bread"],
+  "Chicken Souvlaki": ["Chicken breast", "Lemon", "Garlic", "Tzatziki sauce", "Pita bread", "Olive oil", "Oregano", "Bell peppers", "Chips", "Tomatoes", "Lettuce"],
+  "Salad": ["Breaded chicken fillets", "Lettuce", "Cucumber", "Tomato", "Feta cheese", "Pomegranate", "Eggs", "Ranch dressing"],
+  "Pizza": ["Pizzas"],
+  "Rotisserie Chicken": ["Whole chicken", "Green beans", "Potatoes or Chips", "Gravy"],
+  "Fish Burgers": ["Fish fillets", "Burger buns", "Franks hot sauce", "Cheese slices", "Lettuce", "Tomatoes", "Chips", "Asparagus"],
+  "Bangers and Mash": ["Sausages", "Potatoes", "Butter", "Onion gravy mix"],
+  "Spaghetti Meatballs": ["Spaghetti", "Meatballs", "Red sauce", "Mozzarella"],
+  "Stir Fry": ["Egg noodles", "Chicken breast or shrimp", "Hoisin sauce", "Sugar snap peas", "Cashew nuts", "Honey", "Soy sauce", "Garlic", "Ginger"],
+  "Jambalaya": ["Basmati rice", "Chicken thighs", "Chorizo", "Prawns", "Bell peppers", "Onion", "Celery", "Jambalaya kit", "Yoghurt"],
+  "Jerk Chicken": ["Chicken thighs", "Jerk seasoning", "Jerk Paste" "Lime", "Rice", "Coconut milk", "Kidney beans", "Sweetcorn"],
+  "Cheddar Broccoli": ["Broccoli", "Cheddar", "Butter", "Onion", "Garlic", "Flour", "Cream"],
+  "Chicken parm": ["Chicken fillets", "Capers", "Mozzarella", "Tomato sauce", "Pasta"],
+  "Take Out": ["No ingredients needed!"],
+  "Avacado Toast": ["Nice bread", "Avocado", "Feta cheese", "Eggs", "Bacon"],
+  "Roast Chicken": ["Whole chicken", "Potatoes", "Carrots", "Parsnips", "Yorkshire puds", "Gravy", "Lemons", "Rosemary and Thyme"],
+  "Tomato Basil Chicken": ["Chicken thighs", "Cherry tomatoes", "Basil", "Garlic", "Olive oil", "Potatoes"],
+  "Minestrone soup": ["Mixed vegetables", "Pasta", "Tomatoes", "Beans", "Vegetable broth"],
+  "Artichoke risotto": ["Arborio rice", "Artichokes", "Garlic", "Parmesan", "Vegetable stock"],
+  "Beef Burgers": ["Burgers", "Burger buns", "Cheese slices", "Lettuce", "Tomatoes", "Chips", "Greens", "Pickles"],
+  "Chicken Burgers": ["Chicken breast", "Burger buns", "Cheese slices", "Lettuce", "Tomatoes", "Chips", "Greens"],
+  "Turkey Burgers": ["Turkey mince", "Burger buns", "Cheese slices", "Lettuce", "Tomatoes", "Chips", "Greens"],
+  "Pasta Bake": ["Pasta", "Cheese", "Tomato sauce"],
+  "Enchilades": ["Tortillas", "Chicken", "Cheese", "Enchilada sauce"],
+  "Burrito Bowls": ["Rice", "Chicken or beef", "Black beans", "Corn", "Salsa", "Avocado", "Burrito mix kit"],
+  "Tuna Casserole": ["Tuna", "Pasta", "Cream of mushroom soup", "Peas", "Cheddar cheese"],
+  "Chicken Mackahani": ["Chicken", "Butter", "Tomatoes", "Cream", "Garlic", "Sauce kit"],
+  "Chicken Korma": ["Chicken", "Coconut milk", "Korma Kit", "Instant Rice"],
+  "Sticky Mushrooms": ["Mushrooms", "Soy sauce", "Honey", "Garlic", "Rice"],
+  "Halloumi Tacos": ["Halloumi", "Taco shells", "Bell peppers", "Corn", "Nandos Maya"],
+  "Cheese and Biscuits": ["Camambert", "Garlic", "Crackers", "Grapes", "Brie", "Pomegranate","Frozen sides", "Baguette", "Carrots", "Cucumber"]
+};
 
 function loadShoppingList() {
   const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan'));
@@ -119,14 +134,12 @@ function loadShoppingList() {
     return;
   }
 
-  // Summary
   let summaryHTML = "<strong>This Week’s Meals:</strong><br>";
   for (const [day, meal] of Object.entries(mealPlan)) {
     summaryHTML += `${day}: ${meal}<br>`;
   }
   summaryDiv.innerHTML = summaryHTML;
 
-  // Ingredients List
   listDiv.innerHTML = "";
   for (const [day, meal] of Object.entries(mealPlan)) {
     const header = document.createElement("div");
@@ -134,8 +147,8 @@ function loadShoppingList() {
     header.textContent = `${day}: ${meal}`;
     listDiv.appendChild(header);
 
-    const ingredients = getIngredients(meal);
-    ingredients.forEach(ingredient => {
+    const items = ingredientsData[meal] || ["Ingredients not listed yet"];
+    items.forEach(ingredient => {
       const itemDiv = document.createElement("div");
       itemDiv.className = "shopping-item";
       itemDiv.textContent = ingredient;
@@ -155,7 +168,7 @@ function exportList() {
 
   for (const [day, meal] of Object.entries(mealPlan)) {
     exportText += `📅 ${day.toUpperCase()} — ${meal}\n`;
-    const ingredients = getIngredients(meal);
+    const ingredients = ingredientsData[meal] || ["Ingredients not listed yet"];
     ingredients.forEach(ingredient => {
       const element = uncheckedItems.find(i => i.textContent === ingredient);
       if (element) exportText += `• ${ingredient}\n`;
@@ -174,8 +187,7 @@ function goBack() {
   window.location.href = "index.html";
 }
 
-// ✅ Load meals on page load
-window.onload = loadMealsData;
+window.onload = loadShoppingList;
 </script>
 
 </body>
