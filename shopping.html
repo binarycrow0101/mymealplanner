@@ -88,7 +88,6 @@
 <button onclick="goBack()">Return to Main Page</button>
 
 <script>
-// 🔹 Ingredient mappings
 const ingredientsData = {
   "General Tso Chicken": ["Chicken breast", "Soy sauce", "Garlic", "Ginger", "Rice", "Cornflour", "Broccoli"],
   "Taco's": ["Minced beef/turkey","Taco shells","Taco mix", "Lettuce", "Cheddar cheese","Tomatoes","Sour cream"],
@@ -124,7 +123,6 @@ const ingredientsData = {
   "Halloumi Tacos": ["Halloumi", "Taco shells", "Bell peppers", "Corn", "Nandos Maya"]
 };
 
-// 🔹 Load the shopping list
 function loadShoppingList() {
   const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan'));
   const summaryDiv = document.getElementById('summary');
@@ -135,14 +133,12 @@ function loadShoppingList() {
     return;
   }
 
-  // Render summary
   let summaryHTML = "<strong>This Week’s Meals:</strong><br>";
   for (const [day, meal] of Object.entries(mealPlan)) {
     summaryHTML += `${day}: ${meal}<br>`;
   }
   summaryDiv.innerHTML = summaryHTML;
 
-  // Generate shopping list grouped by meal
   listDiv.innerHTML = "";
   for (const [day, meal] of Object.entries(mealPlan)) {
     const header = document.createElement("div");
@@ -161,36 +157,35 @@ function loadShoppingList() {
   }
 }
 
-// 🔹 ✅ Updated Export (Copy to Clipboard)
+// ✅ Polished Export for To Do
 function exportList() {
   const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan')) || {};
   const allItems = Array.from(document.querySelectorAll('.shopping-item'));
   const uncheckedItems = allItems.filter(item => !item.classList.contains('checked'));
-  
-  let exportText = "WEEKLY SHOPPING LIST:\n\n";
+
+  let exportText = "🛒 WEEKLY SHOPPING LIST\n\n";
+
   for (const [day, meal] of Object.entries(mealPlan)) {
-    exportText += `${day}: ${meal}\n`;
+    exportText += `📅 ${day.toUpperCase()} — ${meal}\n`;
     const ingredients = ingredientsData[meal] || ["Ingredients not listed yet"];
     ingredients.forEach(ingredient => {
       const element = uncheckedItems.find(i => i.textContent === ingredient);
-      if (element) exportText += `- ${ingredient}\n`;
+      if (element) exportText += `• ${ingredient}\n`;
     });
     exportText += "\n";
   }
 
   navigator.clipboard.writeText(exportText).then(() => {
-    alert("✅ Shopping list copied to clipboard! You can now paste it into Microsoft To Do or Notes.");
+    alert("✅ Shopping list copied! Paste into Microsoft To Do — each line will become a new task.");
   }).catch(() => {
     alert("❌ Could not copy to clipboard. Please allow clipboard access.");
   });
 }
 
-// 🔹 Return button
 function goBack() {
   window.location.href = "index.html";
 }
 
-// 🔹 Initialize
 window.onload = loadShoppingList;
 </script>
 
