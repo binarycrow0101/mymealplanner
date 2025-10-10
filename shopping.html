@@ -84,11 +84,11 @@
 <div class="summary" id="summary"></div>
 <div id="shopping-list"></div>
 
-<button onclick="exportList()">Export List</button>
+<button onclick="exportList()">Copy Shopping List</button>
 <button onclick="goBack()">Return to Main Page</button>
 
 <script>
-// 🔹 Ingredient mappings — you can freely expand this
+// 🔹 Ingredient mappings
 const ingredientsData = {
   "General Tso Chicken": ["Chicken breast", "Soy sauce", "Garlic", "Ginger", "Rice", "Cornflour", "Broccoli"],
   "Taco's": ["Minced beef/turkey","Taco shells","Taco mix", "Lettuce", "Cheddar cheese","Tomatoes","Sour cream"],
@@ -161,25 +161,28 @@ function loadShoppingList() {
   }
 }
 
-// 🔹 ✅ Export (iPhone-friendly) — opens the list in a new browser tab
+// 🔹 ✅ Updated Export (Copy to Clipboard)
 function exportList() {
   const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan')) || {};
   const allItems = Array.from(document.querySelectorAll('.shopping-item'));
   const uncheckedItems = allItems.filter(item => !item.classList.contains('checked'));
   
-  let exportText = "WEEKLY MEAL PLAN:\n\n";
+  let exportText = "WEEKLY SHOPPING LIST:\n\n";
   for (const [day, meal] of Object.entries(mealPlan)) {
     exportText += `${day}: ${meal}\n`;
     const ingredients = ingredientsData[meal] || ["Ingredients not listed yet"];
     ingredients.forEach(ingredient => {
       const element = uncheckedItems.find(i => i.textContent === ingredient);
-      if (element) exportText += `  - ${ingredient}\n`;
+      if (element) exportText += `- ${ingredient}\n`;
     });
     exportText += "\n";
   }
 
-  const newTab = window.open();
-  newTab.document.write("<pre style='font-family:monospace; white-space:pre-wrap;'>" + exportText + "</pre>");
+  navigator.clipboard.writeText(exportText).then(() => {
+    alert("✅ Shopping list copied to clipboard! You can now paste it into Microsoft To Do or Notes.");
+  }).catch(() => {
+    alert("❌ Could not copy to clipboard. Please allow clipboard access.");
+  });
 }
 
 // 🔹 Return button
