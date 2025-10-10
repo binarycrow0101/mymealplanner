@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Weekly Shopping List</title>
 <style>
   body {
@@ -69,6 +69,7 @@
 <div id="shopping-list"></div>
 
 <button onclick="exportList()">Copy Shopping List</button>
+<button onclick="openExportTab()">Open Export Tab</button>
 <button onclick="goBack()">Return to Main Page</button>
 
 <script>
@@ -148,7 +149,7 @@ function loadShoppingList() {
   }
 }
 
-// ✅ Export for To Do
+// ✅ Copy to Microsoft To Do
 function exportList() {
   const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan')) || {};
   const allItems = Array.from(document.querySelectorAll('.shopping-item'));
@@ -170,6 +171,36 @@ function exportList() {
   }).catch(() => {
     alert("❌ Could not copy to clipboard. Please allow clipboard access.");
   });
+}
+
+// ✅ Open export in a new tab
+function openExportTab() {
+  const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan')) || {};
+  const allItems = Array.from(document.querySelectorAll('.shopping-item'));
+  const uncheckedItems = allItems.filter(item => !item.classList.contains('checked'));
+
+  let exportText = "🛒 WEEKLY SHOPPING LIST\n\n";
+  for (const [day, meal] of Object.entries(mealPlan)) {
+    exportText += `📅 ${day.toUpperCase()} — ${meal}\n`;
+    const ingredients = ingredientsData[meal] || ["Ingredients not listed yet"];
+    ingredients.forEach(ingredient => {
+      const element = uncheckedItems.find(i => i.textContent === ingredient);
+      if (element) exportText += `• ${ingredient}\n`;
+    });
+    exportText += "\n";
+  }
+
+  const newTab = window.open();
+  newTab.document.write(`
+    <html>
+    <head><title>Exported Shopping List</title></head>
+    <body style="font-family: 'Segoe UI', sans-serif; padding: 20px; white-space: pre-wrap;">
+      <h2>🛒 Weekly Shopping List</h2>
+      <pre>${exportText}</pre>
+    </body>
+    </html>
+  `);
+  newTab.document.close();
 }
 
 function goBack() {
