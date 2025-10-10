@@ -100,6 +100,199 @@ const ingredientsData = {
   "Bangers and Mash": ["Sausages", "Potatoes", "Butter", "Onion gravy mix"],
   "Spaghetti Meatballs": ["Spaghetti", "Meatballs", "Red sauce", "Mozzarella"],
   "Stir Fry": ["Egg noodles", "Chicken breast or shrimp", "Hoisin sauce", "Sugar snap peas", "Cashew nuts", "Honey", "Soy sauce", "Garlic", "Ginger"],
+  "Jambalaya": ["Basmati rice", "Chicken thighs", "Chorizo", "Prawns", "Bell peppers", "Onion", "Celery", "Jambalaya kit", "Yoghurt"],
+  "Jerk Chicken": ["Chicken thighs", "Jerk seasoning", "Jerk Paste" "Lime", "Rice", "Coconut milk", "Kidney beans", "Sweetcorn"],
+  "Cheddar Broccoli": ["Broccoli", "Cheddar", "Butter", "Onion", "Garlic", "Flour", "Cream"],
+  "Chicken parm": ["Chicken fillets", "Capers", "Mozzarella", "Tomato sauce", "Pasta"],
+  "Take Out": ["No ingredients needed!"],
+  "Avacado Toast": ["Nice bread", "Avocado", "Feta cheese", "Eggs", "Bacon"],
+  "Roast Chicken": ["Whole chicken", "Potatoes", "Carrots", "Parsnips", "Yorkshire puds", "Gravy", "Lemons", "Rosemary and Thyme"],
+  "Tomato Basil Chicken": ["Chicken thighs", "Cherry tomatoes", "Basil", "Garlic", "Olive oil", "Potatoes"],
+  "Minestrone soup": ["Mixed vegetables", "Pasta", "Tomatoes", "Beans", "Vegetable broth"],
+  "Artichoke risotto": ["Arborio rice", "Artichokes", "Garlic", "Parmesan", "Vegetable stock"],
+  "Beef Burgers": ["Burgers", "Burger buns", "Cheese slices", "Lettuce", "Tomatoes", "Chips", "Greens", "Pickles"],
+  "Chicken Burgers": ["Chicken breast", "Burger buns", "Cheese slices", "Lettuce", "Tomatoes", "Chips", "Greens"],
+  "Turkey Burgers": ["Turkey mince", "Burger buns", "Cheese slices", "Lettuce", "Tomatoes", "Chips", "Greens"],
+  "Pasta Bake": ["Pasta", "Cheese", "Tomato sauce"],
+  "Enchilades": ["Tortillas", "Chicken", "Cheese", "Enchilada sauce"],
+  "Burrito Bowls": ["Rice", "Chicken or beef", "Black beans", "Corn", "Salsa", "Avocado", "Burrito mix kit"],
+  "Tuna Casserole": ["Tuna", "Pasta", "Cream of mushroom soup", "Peas", "Cheddar cheese"],
+  "Chicken Mackahani": ["Chicken", "Butter", "Tomatoes", "Cream", "Garlic", "Sauce kit"],
+  "Chicken Korma": ["Chicken", "Coconut milk", "Korma Kit", "Instant Rice"],
+  "Sticky Mushrooms": ["Mushrooms", "Soy sauce", "Honey", "Garlic", "Rice"],
+  "Halloumi Tacos": ["Halloumi", "Taco shells", "Bell peppers", "Corn", "Nandos Maya"],
+  "Cheese and Biscuits": ["Camambert", "Garlic", "Crackers", "Grapes", "Brie", "Pomegranate","Frozen sides", "Baguette", "Carrots", "Cucumber"]
+};
+
+function loadShoppingList() {
+  const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan'));
+  const summaryDiv = document.getElementById('summary');
+  const listDiv = document.getElementById('shopping-list');
+
+  if (!mealPlan) {
+    summaryDiv.innerHTML = "<p class='empty-message'>No meal plan found. Please go back and generate one first.</p>";
+    return;
+  }
+
+  let summaryHTML = "<strong>This Week’s Meals:</strong><br>";
+  for (const [day, meal] of Object.entries(mealPlan)) {
+    summaryHTML += `${day}: ${meal}<br>`;
+  }
+  summaryDiv.innerHTML = summaryHTML;
+
+  listDiv.innerHTML = "";
+  for (const [day, meal] of Object.entries(mealPlan)) {
+    const header = document.createElement("div");
+    header.className = "meal-header";
+    header.textContent = `${day}: ${meal}`;
+    listDiv.appendChild(header);
+
+    const items = ingredientsData[meal] || ["Ingredients not listed yet"];
+    items.forEach(ingredient => {
+      const itemDiv = document.createElement("div");
+      itemDiv.className = "shopping-item";
+      itemDiv.textContent = ingredient;
+      itemDiv.onclick = () => itemDiv.classList.toggle("checked");
+      listDiv.appendChild(itemDiv);
+    });
+  }
+}
+
+// ✅ Polished Export for To Do
+function exportList() {
+  const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan')) || {};
+  const allItems = Array.from(document.querySelectorAll('.shopping-item'));
+  const uncheckedItems = allItems.filter(item => !item.classList.contains('checked'));
+
+  let exportText = "🛒 WEEKLY SHOPPING LIST\n\n";
+
+  for (const [day, meal] of Object.entries(mealPlan)) {
+    exportText += `📅 ${day.toUpperCase()} — ${meal}\n`;
+    const ingredients = ingredientsData[meal] || ["Ingredients not listed yet"];
+    ingredients.forEach(ingredient => {
+      const element = uncheckedItems.find(i => i.textContent === ingredient);
+      if (element) exportText += `• ${ingredient}\n`;
+    });
+    exportText += "\n";
+  }
+
+  navigator.clipboard.writeText(exportText).then(() => {
+    alert("✅ Shopping list copied! Paste into Microsoft To Do — each line will become a new task.");
+  }).catch(() => {
+    alert("❌ Could not copy to clipboard. Please allow clipboard access.");
+  });
+}
+
+function goBack() {
+  window.location.href = "index.html";
+}
+
+window.onload = loadShoppingList;
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Shopping List</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+    background: #fafafa;
+    color: #333;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  button {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    margin: 10px 0;
+    background: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  button:hover {
+    background: #005fa3;
+  }
+
+  .summary {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+  }
+
+  .shopping-item {
+    padding: 10px 15px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .shopping-item:hover {
+    background: #f1f7ff;
+  }
+
+  .checked {
+    text-decoration: line-through;
+    color: gray;
+    background: #e0e0e0 !important;
+  }
+
+  .meal-header {
+    font-weight: bold;
+    margin-top: 15px;
+  }
+
+  .empty-message {
+    text-align: center;
+    color: #777;
+    margin-top: 30px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Weekly Shopping List</h1>
+
+<div class="summary" id="summary"></div>
+<div id="shopping-list"></div>
+
+<button onclick="exportList()">Copy Shopping List</button>
+<button onclick="goBack()">Return to Main Page</button>
+
+<script>
+const ingredientsData = {
+  "General Tso Chicken": ["Chicken breast", "Soy sauce", "Garlic", "Ginger", "Rice", "Cornflour", "Broccoli"],
+  "Taco's": ["Minced beef/turkey","Taco shells","Taco mix", "Lettuce", "Cheddar cheese","Tomatoes","Sour cream"],
+  "Pasta and Red Sauce": ["Rigatoni pasta", "Tomato sauce", "Mozzarella cheese", "Garlic bread"],
+  "Chicken Souvlaki": ["Chicken breast", "Lemon", "Garlic", "Tzatziki sauce", "Pita bread", "Olive oil", "Oregano", "Bell peppers", "Chips", "Tomatoes", "Lettuce"],
+  "Salad": ["Breaded chicken fillets", "Lettuce", "Cucumber", "Tomato", "Feta cheese", "Pomegranate", "Eggs", "Ranch dressing"],
+  "Pizza": ["Pizzas"],
+  "Rotisserie Chicken": ["Whole chicken", "Green beans", "Potatoes or Chips", "Gravy"],
+  "Fish Burgers": ["Fish fillets", "Burger buns", "Franks hot sauce", "Cheese slices", "Lettuce", "Tomatoes", "Chips", "Asparagus"],
+  "Bangers and Mash": ["Sausages", "Potatoes", "Butter", "Onion gravy mix"],
+  "Spaghetti Meatballs": ["Spaghetti", "Meatballs", "Red sauce", "Mozzarella"],
+  "Stir Fry": ["Egg noodles", "Chicken breast or shrimp", "Hoisin sauce", "Sugar snap peas", "Cashew nuts", "Honey", "Soy sauce", "Garlic", "Ginger"],
   "Jambalaya": ["Rice", "Chicken thighs", "Chorizo", "Prawns", "Bell peppers", "Onion", "Celery", "Jambalaya kit"],
   "Jerk Chicken": ["Chicken thighs", "Jerk seasoning", "Lime", "Rice", "Coconut milk", "Kidney beans", "Sweetcorn"],
   "Cheddar Broccoli": ["Broccoli", "Cheddar", "Butter", "Onion", "Garlic", "Flour", "Cream"],
@@ -191,3 +384,4 @@ window.onload = loadShoppingList;
 
 </body>
 </html>
+
