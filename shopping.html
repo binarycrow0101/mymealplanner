@@ -161,46 +161,25 @@ function loadShoppingList() {
   }
 }
 
-// 🔹 ✅ UPDATED: Export only uncrossed items + auto date filename
+// 🔹 ✅ Export (iPhone-friendly) — opens the list in a new browser tab
 function exportList() {
   const mealPlan = JSON.parse(localStorage.getItem('weeklyMealPlan')) || {};
-  const listDiv = document.getElementById('shopping-list');
-
+  const allItems = Array.from(document.querySelectorAll('.shopping-item'));
+  const uncheckedItems = allItems.filter(item => !item.classList.contains('checked'));
+  
   let exportText = "WEEKLY MEAL PLAN:\n\n";
   for (const [day, meal] of Object.entries(mealPlan)) {
     exportText += `${day}: ${meal}\n`;
-    const mealHeader = Array.from(listDiv.querySelectorAll('.meal-header'))
-      .find(header => header.textContent.includes(meal));
-
-    if (mealHeader) {
-      let itemsForMeal = [];
-      let next = mealHeader.nextElementSibling;
-      while (next && !next.classList.contains('meal-header')) {
-        if (next.classList.contains('shopping-item') && !next.classList.contains('checked')) {
-          itemsForMeal.push(next.textContent);
-        }
-        next = next.nextElementSibling;
-      }
-
-      if (itemsForMeal.length > 0) {
-        itemsForMeal.forEach(i => exportText += `  - ${i}\n`);
-      } else {
-        exportText += "  (All ingredients already checked off)\n";
-      }
-      exportText += "\n";
-    }
+    const ingredients = ingredientsData[meal] || ["Ingredients not listed yet"];
+    ingredients.forEach(ingredient => {
+      const element = uncheckedItems.find(i => i.textContent === ingredient);
+      if (element) exportText += `  - ${ingredient}\n`;
+    });
+    exportText += "\n";
   }
 
-  // Add date to file name
-  const dateStr = new Date().toISOString().split('T')[0];
-  const fileName = `shopping_list_${dateStr}.txt`;
-
-  const blob = new Blob([exportText], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  a.click();
+  const newTab = window.open();
+  newTab.document.write("<pre style='font-family:monospace; white-space:pre-wrap;'>" + exportText + "</pre>");
 }
 
 // 🔹 Return button
